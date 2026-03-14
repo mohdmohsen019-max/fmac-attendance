@@ -11,7 +11,8 @@ export default function AttendanceTable({ players, onToggleStatus }) {
 
   return (
     <div className="table-wrapper">
-      <table className="attendance-table">
+      {/* Desktop Table */}
+      <table className="attendance-table desktop-only">
         <thead>
           <tr>
             <th>Player Name</th>
@@ -53,6 +54,37 @@ export default function AttendanceTable({ players, onToggleStatus }) {
           ))}
         </tbody>
       </table>
+
+      {/* Mobile Card List */}
+      <div className="mobile-card-list mobile-only">
+        {players.map((player) => (
+          <div key={player.id} className="player-card">
+            <div className="player-card-top">
+              <div className="player-info">
+                <div className="avatar">{player.name.charAt(0)}</div>
+                <div className="name-id">
+                  <span className="player-name">{player.name}</span>
+                  <span className="player-id">#{player.id}</span>
+                </div>
+              </div>
+              <button
+                className={`status-btn ${player.status === 'present' ? 'present' : 'absent'}`}
+                onClick={() => onToggleStatus(player.id)}
+              >
+                <div className="status-indicator"></div>
+                <span className="status-text">
+                  {player.status === 'present' ? 'Present' : 'Absent'}
+                </span>
+              </button>
+            </div>
+            <div className="player-card-details">
+              <span className="badge badge-sport">{player.sport}</span>
+              <span className="card-detail">🕐 {player.classTiming}</span>
+              <span className="card-detail">👤 {player.coach}</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
