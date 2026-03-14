@@ -10,6 +10,7 @@ export default function Dashboard() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSport, setFilterSport] = useState('All');
+  const [filterTiming, setFilterTiming] = useState('All');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
@@ -66,6 +67,16 @@ export default function Dashboard() {
     return ['All', ...Array.from(allSports).sort()];
   }, []);
 
+  const timings = useMemo(() => {
+    const allTimings = new Set();
+    mockPlayers.forEach(p => {
+      if (p.classTiming && p.classTiming !== 'N/A') {
+        allTimings.add(p.classTiming.trim());
+      }
+    });
+    return ['All', ...Array.from(allTimings).sort()];
+  }, []);
+
   const filteredPlayers = useMemo(() => {
     return players.filter(p => {
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -79,9 +90,11 @@ export default function Dashboard() {
         matchesSport = playerSports.includes(filterSport.toLowerCase());
       }
       
-      return matchesSearch && matchesSport;
+      const matchesTiming = filterTiming === 'All' || p.classTiming?.trim() === filterTiming;
+
+      return matchesSearch && matchesSport && matchesTiming;
     });
-  }, [players, searchQuery, filterSport]);
+  }, [players, searchQuery, filterSport, filterTiming]);
 
   const stats = useMemo(() => {
     const total = players.length;
@@ -139,6 +152,15 @@ export default function Dashboard() {
           >
             {sports.map(sport => (
               <option key={sport} value={sport}>{sport}</option>
+            ))}
+          </select>
+          <select
+            value={filterTiming}
+            onChange={(e) => setFilterTiming(e.target.value)}
+            className="sport-select"
+          >
+            {timings.map(t => (
+              <option key={t} value={t}>{t}</option>
             ))}
           </select>
           <button 
