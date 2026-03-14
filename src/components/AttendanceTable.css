@@ -1,0 +1,155 @@
+.table-wrapper {
+  width: 100%;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  background: var(--secondary-bg);
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.attendance-table th {
+  padding: 16px 24px;
+  background: var(--secondary-bg);
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.attendance-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--glass-border);
+  vertical-align: middle;
+}
+
+.table-row {
+  transition: background-color var(--transition-speed);
+}
+
+.table-row:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.table-row:last-child td {
+  border-bottom: none;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.name-id {
+  display: flex;
+  flex-direction: column;
+}
+
+.player-name {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.player-id {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--accent-color);
+  color: white;
+  text-transform: uppercase;
+}
+
+.timing-cell {
+  color: var(--text-main);
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.coach-cell {
+  color: var(--text-main);
+}
+
+.status-col {
+  text-align: right;
+  width: 140px;
+}
+
+.status-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all var(--transition-speed);
+}
+
+.status-btn.present {
+  background: var(--status-present-bg);
+  border-color: rgba(46, 160, 67, 0.3);
+  color: var(--status-present);
+}
+
+.status-btn.present .status-indicator {
+  background: var(--status-present);
+  box-shadow: 0 0 8px var(--status-present);
+}
+
+.status-btn.absent {
+  background: var(--status-absent-bg);
+  border-color: rgba(229, 62, 62, 0.3);
+  color: var(--status-absent);
+}
+
+.status-btn.absent .status-indicator {
+  background: var(--status-absent);
+  box-shadow: 0 0 8px var(--status-absent);
+}
+
+.status-btn:hover {
+  transform: translateY(-1px);
+}
+
+.empty-state {
+  padding: 48px;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+}
