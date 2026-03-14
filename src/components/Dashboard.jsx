@@ -38,13 +38,13 @@ export default function Dashboard() {
     try {
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify(players),
+        body: JSON.stringify(filteredPlayers),
       });
       
       const result = await response.json();
       if (result.result === 'success') {
-        setSaveMessage('Attendance Saved!');
-        setTimeout(() => setSaveMessage(''), 3000);
+        setSaveMessage(`✅ Saved ${filteredPlayers.length} players!`);
+        setTimeout(() => setSaveMessage(''), 4000);
       } else {
         throw new Error(result.error || "Unknown error occurred.");
       }
@@ -168,7 +168,7 @@ export default function Dashboard() {
             onClick={handleSaveAttendance} 
             disabled={isSaving}
           >
-            {isSaving ? 'Saving...' : '💾 Save Attendance'}
+            {isSaving ? 'Saving...' : `💾 Save (${filteredPlayers.length})`}
           </button>
           {saveMessage && <span className="save-msg">{saveMessage}</span>}
         </div>
