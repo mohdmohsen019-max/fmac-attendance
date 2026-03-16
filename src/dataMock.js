@@ -108,7 +108,7 @@ export const mockPlayers = [
     "id": "2077",
     "name": "Alma mostafa",
     "sport": "Judo",
-    "classTiming": "03.00 PM - 04.00 PM",
+    "classTiming": "12:00 AM - 12:00 AM",
     "coach": "Awad Ahmed Abdullah"
   },
   {
@@ -458,7 +458,7 @@ export const mockPlayers = [
     "id": "3571",
     "name": "Sanad Saeed  almesmari",
     "sport": "Judo",
-    "classTiming": "0.6875 - 0.7291666666666666",
+    "classTiming": "04:30 PM - 05:30 PM",
     "coach": "Hamza Alzidaneen "
   },
   {
@@ -5568,7 +5568,7 @@ export const mockPlayers = [
     "id": "672",
     "name": "Adidev Minto Kodukathil",
     "sport": "Taekwondo",
-    "classTiming": "0.7916666666666666 - 0.875",
+    "classTiming": "07:00 PM - 09:00 PM",
     "coach": "Abbas Amido"
   },
   {

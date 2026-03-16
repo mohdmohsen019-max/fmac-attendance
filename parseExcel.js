@@ -13,11 +13,20 @@ try {
   
   const mappedData = data.map((row) => {
     
-    // Formatting the time nicely
-    let fromTime = row['Training From Time'] || '';
-    let toTime = row['Training To Time'] || '';
-    
-    // Sometimes Excel stores times as decimals, let's keep it simple for now or pass as strings
+    // Helper to convert Excel decimal time (e.g. 0.6875) to "04:30 PM"
+    const convertExcelTime = (val) => {
+      if (val === undefined || val === null || val === '') return '';
+      if (typeof val === 'string' && val.includes(':')) return val.trim(); // already a string
+      const totalMinutes = Math.round(parseFloat(val) * 24 * 60);
+      const hours24 = Math.floor(totalMinutes / 60) % 24;
+      const minutes = totalMinutes % 60;
+      const period = hours24 >= 12 ? 'PM' : 'AM';
+      const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+      return `${String(hours12).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
+    };
+
+    let fromTime = convertExcelTime(row['Training From Time']);
+    let toTime = convertExcelTime(row['Training To Time']);
     let classTiming = (fromTime || toTime) ? `${fromTime} - ${toTime}` : 'N/A';
     
     // If Excel times come in as decimals (like 0.666), xlsx.utils.format_cell might be better
