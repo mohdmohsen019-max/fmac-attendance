@@ -346,7 +346,7 @@ export const mockPlayers = [
     "id": "590",
     "name": "Khadija Hamdan Almesmaari",
     "sport": "Fencing",
-    "classTiming": "19:00:00 - 21:00:00",
+    "classTiming": "07:00 PM - 09:00 PM",
     "coach": "Mahitab Hisham Wasfi"
   },
   {
@@ -458,7 +458,7 @@ export const mockPlayers = [
     "id": "3571",
     "name": "Sanad Saeed  almesmari",
     "sport": "Judo",
-    "classTiming": "04.30 PM - 05.30 PM",
+    "classTiming": "0.6875 - 0.7291666666666666",
     "coach": "Hamza Alzidaneen "
   },
   {
@@ -4525,7 +4525,7 @@ export const mockPlayers = [
     "id": "8279",
     "name": "Waleid",
     "sport": "Taekwondo",
-    "classTiming": "04:30 PM - ",
+    "classTiming": "04:30 PM - 05:30 PM",
     "coach": "N/A"
   },
   {
@@ -5568,7 +5568,7 @@ export const mockPlayers = [
     "id": "672",
     "name": "Adidev Minto Kodukathil",
     "sport": "Taekwondo",
-    "classTiming": "19:00:00 - 21:00:00",
+    "classTiming": "0.7916666666666666 - 0.875",
     "coach": "Abbas Amido"
   },
   {
