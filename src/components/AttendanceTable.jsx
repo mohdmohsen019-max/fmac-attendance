@@ -42,7 +42,7 @@ export default function AttendanceTable({ players, onToggleStatus }) {
               <td className="status-col">
                 <button 
                   className={`status-btn ${player.status === 'present' ? 'present' : 'absent'}`}
-                  onClick={() => onToggleStatus(player.id)}
+                  onClick={() => onToggleStatus(player.firestoreId)}
                 >
                   <div className="status-indicator"></div>
                   <span className="status-text">
@@ -69,7 +69,7 @@ export default function AttendanceTable({ players, onToggleStatus }) {
               </div>
               <button
                 className={`status-btn ${player.status === 'present' ? 'present' : 'absent'}`}
-                onClick={() => onToggleStatus(player.id)}
+                onClick={() => onToggleStatus(player.firestoreId)}
               >
                 <div className="status-indicator"></div>
                 <span className="status-text">

@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import Dashboard from './components/Dashboard'
+import AttendanceHistory from './components/AttendanceHistory'
+import AnalyticsView from './components/AnalyticsView'
+import { auth } from './firebase'
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth'
 
-// Admin credentials - change these to your own!
-const ADMIN_USERNAME = 'fmac';
-const ADMIN_PASSWORD = 'fmac2026';
 
 function LoginPage({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -12,18 +13,19 @@ function LoginPage({ onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setTimeout(() => {
-      if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-        onLogin();
-      } else {
-        setError('Incorrect username or password.');
-      }
+    
+    try {
+      await signInWithEmailAndPassword(auth, username, password);
+    } catch (err) {
+      console.error(err);
+      setError('Invalid email or password.');
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
   return (
@@ -41,7 +43,7 @@ function LoginPage({ onLogin }) {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
+              placeholder="Enter email"
               autoComplete="username"
               required
             />
@@ -68,11 +70,47 @@ function LoginPage({ onLogin }) {
 }
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [initializing, setInitializing] = useState(true);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
-  if (!isLoggedIn) {
-    return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setInitializing(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = () => {
+    signOut(auth);
+  };
+
+  if (initializing) {
+    return (
+      <div className="initializing-overlay">
+        <div className="loader"></div>
+        <p>Initializing Secure Session...</p>
+      </div>
+    );
   }
+
+  if (!user) {
+    return <LoginPage />;
+  }
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'history':
+        return <AttendanceHistory />;
+      case 'analytics':
+        return <AnalyticsView />;
+      default:
+        return <Dashboard />;
+    }
+  };
 
   return (
     <div className="app-container">
@@ -90,14 +128,34 @@ function App() {
           <div className="date-display">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
-          <button className="logout-btn" onClick={() => setIsLoggedIn(false)}>
+          <button className="logout-btn" onClick={handleLogout}>
             Sign Out
           </button>
         </div>
       </header>
 
       <main className="main-content">
-        <Dashboard />
+        <nav className="tabs-nav glass-panel animate-fade-in">
+          <button 
+            className={`tab-link ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            Today's Attendance
+          </button>
+          <button 
+            className={`tab-link ${activeTab === 'history' ? 'active' : ''}`}
+            onClick={() => setActiveTab('history')}
+          >
+            History Logs
+          </button>
+          <button 
+            className={`tab-link ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            Player Analytics
+          </button>
+        </nav>
+        {renderContent()}
       </main>
     </div>
   )

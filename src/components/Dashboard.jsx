@@ -1,56 +1,83 @@
-import { useState, useMemo } from 'react';
-import { mockPlayers } from '../dataMock';
+import { useState, useMemo, useEffect } from 'react';
+import { db } from '../firebase';
+import { collection, onSnapshot, query, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import AttendanceTable from './AttendanceTable';
 import './Dashboard.css';
 
 export default function Dashboard() {
-  const [players, setPlayers] = useState(
-    mockPlayers.map(p => ({ ...p, status: 'absent' }))
-  );
-  
+  const [players, setPlayers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSport, setFilterSport] = useState('All');
   const [filterTiming, setFilterTiming] = useState('All');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
-  // This will be replaced by the user's actual Google Apps Script Web App URL
-  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxSkY3FqoCymbjcV9umDZXziLLG1iX_gfiYM-YUIrs-TtJq2ii5cbLCAKSJ1KdQ-hvtcg/exec';
+  useEffect(() => {
+    const q = query(collection(db, "players"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const playersData = [];
+      querySnapshot.forEach((doc) => {
+        playersData.push({ ...doc.data(), firestoreId: doc.id, status: doc.data().status || 'absent' });
+      });
+      setPlayers(playersData);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching players:", error);
+      setLoading(false);
+    });
 
-  const handleToggleStatus = (id) => {
-    setPlayers(players.map(p => {
-      if (p.id === id) {
-        return { ...p, status: p.status === 'present' ? 'absent' : 'present' };
-      }
-      return p;
-    }));
+    return () => unsubscribe();
+  }, []);
+
+
+  const handleToggleStatus = async (firestoreId) => {
+    const player = players.find(p => p.firestoreId === firestoreId);
+    if (!player) return;
+
+    const newStatus = player.status === 'present' ? 'absent' : 'present';
+    const playerRef = doc(db, "players", firestoreId);
+    
+    try {
+      await updateDoc(playerRef, { status: newStatus });
+    } catch (error) {
+      console.error("Error updating player status:", error);
+      alert("Failed to update status. Please check your internet connection.");
+    }
   };
 
   const handleSaveAttendance = async () => {
-    if (GOOGLE_SCRIPT_URL === 'INSERT_YOUR_WEB_APP_URL_HERE') {
-      alert("Please configure your Google Script URL first.");
+    if (filteredPlayers.length === 0) {
+      alert("No players to save.");
       return;
     }
 
     setIsSaving(true);
-    setSaveMessage('Saving...');
+    setSaveMessage('Saving Snapshot...');
 
     try {
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify(filteredPlayers),
+      // Save a historical snapshot
+      await addDoc(collection(db, "attendance_logs"), {
+        date: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
+        day: new Date().toLocaleDateString('en-US', { weekday: 'long' }),
+        timing: filterTiming === 'All' ? 'Custom Filter' : filterTiming,
+        sport: filterSport,
+        presentCount: stats.present,
+        absentCount: stats.absent,
+        totalCount: stats.total,
+        attendance: filteredPlayers.map(p => ({
+          id: p.id,
+          name: p.name,
+          status: p.status
+        })),
+        timestamp: serverTimestamp()
       });
       
-      const result = await response.json();
-      if (result.result === 'success') {
-        setSaveMessage(`✅ Saved ${filteredPlayers.length} players!`);
-        setTimeout(() => setSaveMessage(''), 4000);
-      } else {
-        throw new Error(result.error || "Unknown error occurred.");
-      }
+      setSaveMessage(`✅ Logged ${stats.present} present!`);
+      setTimeout(() => setSaveMessage(''), 4000);
     } catch (error) {
-      console.error(error);
-      setSaveMessage('Failed to save.');
+      console.error("Error saving log:", error);
+      setSaveMessage('Failed to log.');
     } finally {
       setIsSaving(false);
     }
@@ -58,24 +85,24 @@ export default function Dashboard() {
 
   const sports = useMemo(() => {
     const allSports = new Set();
-    mockPlayers.forEach(p => {
+    players.forEach(p => {
       if (p.sport && p.sport !== 'N/A') {
         const parts = p.sport.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
         parts.forEach(s => allSports.add(s));
       }
     });
     return ['All', ...Array.from(allSports).sort()];
-  }, []);
+  }, [players]);
 
   const timings = useMemo(() => {
     const allTimings = new Set();
-    mockPlayers.forEach(p => {
+    players.forEach(p => {
       if (p.classTiming && p.classTiming !== 'N/A') {
         allTimings.add(p.classTiming.trim());
       }
     });
     return ['All', ...Array.from(allTimings).sort()];
-  }, []);
+  }, [players]);
 
   const filteredPlayers = useMemo(() => {
     return players.filter(p => {
@@ -175,10 +202,16 @@ export default function Dashboard() {
       </div>
 
       <div className="table-container glass-panel animate-fade-in" style={{animationDelay: '0.6s'}}>
-        <AttendanceTable 
-          players={filteredPlayers} 
-          onToggleStatus={handleToggleStatus} 
-        />
+        {loading ? (
+          <div className="loading-state">
+            <p>Connection to Firebase...</p>
+          </div>
+        ) : (
+          <AttendanceTable 
+            players={filteredPlayers} 
+            onToggleStatus={handleToggleStatus} 
+          />
+        )}
       </div>
     </div>
   );

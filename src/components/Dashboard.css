@@ -186,3 +186,10 @@
   padding: 1px; /* border thickness */
   overflow-x: auto;
 }
+
+.loading-state {
+  padding: 60px;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+}
