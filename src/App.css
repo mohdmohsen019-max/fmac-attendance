@@ -9,9 +9,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background: var(--secondary-bg);
-  border-bottom: 1px solid var(--glass-border);
+  padding: 1.5rem 2rem;
 }
 
 .logo {
@@ -37,6 +35,10 @@
   font-size: 1.5rem;
   margin: 0;
   color: var(--text-main);
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  -webkit-text-fill-color: unset;
 }
 
 .date-display {
@@ -52,7 +54,7 @@
 .header-title {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 2px;
 }
 
@@ -86,9 +88,6 @@
   flex-direction: column;
   gap: 2rem;
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 2rem 2rem 2rem;
 }
 
 /* =========== Login Page =========== */
@@ -236,33 +235,33 @@
 /* =========== Tabs Navigation =========== */
 .tabs-nav {
   display: flex;
-  gap: 24px;
-  padding: 0 16px;
-  margin-top: 1rem;
-  border-bottom: 1px solid var(--glass-border);
+  gap: 8px;
+  padding: 8px;
+  margin-bottom: 8px;
 }
 
 .tab-link {
-  padding: 12px 0;
+  flex: 1;
+  padding: 12px;
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 0; /* flat bottom */
+  border-radius: 6px;
   color: var(--text-muted);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all var(--transition-speed);
 }
 
 .tab-link.active {
-  color: var(--text-main);
-  border-bottom: 2px solid var(--accent-color);
+  background: var(--accent-color);
+  color: white;
+  box-shadow: 0 4px 12px rgba(164, 44, 52, 0.2);
 }
 
 .tab-link:hover:not(.active) {
+  background: rgba(0,0,0,0.03);
   color: var(--text-main);
-  border-bottom: 2px solid rgba(0,0,0,0.1);
 }
 
 .placeholder-view {
