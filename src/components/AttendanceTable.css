@@ -13,7 +13,7 @@
 
 .attendance-table th {
   padding: 16px 24px;
-  background: rgba(0, 0, 0, 0.2);
+  background: #FAFAEA; /* Very light warm grey for headers */
   color: var(--text-muted);
   font-weight: 600;
   font-size: 0.75rem;
@@ -33,7 +33,7 @@
 }
 
 .table-row:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: #F8F8F4;
 }
 
 .table-row:last-child td {
@@ -80,7 +80,7 @@
   border-radius: 100px;
   font-size: 0.7rem;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.05);
+  background: #F8F8F4;
   border: 1px solid var(--glass-border);
   color: var(--text-main);
   text-transform: uppercase;
@@ -89,7 +89,7 @@
 
 .timing-cell {
   color: var(--text-muted);
-  font-family: monospace;
+  font-family: inherit;
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -111,8 +111,8 @@
   gap: 8px;
   padding: 6px 16px;
   border-radius: 100px;
-  border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  background: #FFFFFF;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -121,37 +121,35 @@
   overflow: hidden;
   transition: all var(--transition-speed);
   width: 120px;
+  color: var(--text-muted);
 }
 
 .status-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%; /* Glowing dots */
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
   transition: all var(--transition-speed);
+  background: var(--glass-border);
 }
 
 .status-btn.present {
   background: var(--status-present-bg);
-  border-color: rgba(74, 222, 128, 0.2);
+  border-color: rgba(22, 163, 74, 0.2);
   color: var(--status-present);
-  box-shadow: 0 0 15px rgba(74, 222, 128, 0.1);
 }
 
 .status-btn.present .status-indicator {
   background: var(--status-present);
-  box-shadow: 0 0 8px var(--status-present);
 }
 
 .status-btn.absent {
   background: var(--status-absent-bg);
-  border-color: rgba(248, 113, 113, 0.2);
+  border-color: rgba(220, 38, 38, 0.2);
   color: var(--status-absent);
-  box-shadow: 0 0 15px rgba(248, 113, 113, 0.1);
 }
 
 .status-btn.absent .status-indicator {
   background: var(--status-absent);
-  box-shadow: 0 0 8px var(--status-absent);
 }
 
 .status-btn:hover {

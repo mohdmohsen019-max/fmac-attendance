@@ -114,8 +114,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="bg-glow"></div>
-      <header className="glass-panel main-header animate-fade-in">
+      <header className="main-header animate-fade-in">
         <div className="logo">
           <div className="logo-icon">
             <img src="/fmac-logo.png" alt="FMAC Logo" />

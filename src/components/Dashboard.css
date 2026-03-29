@@ -34,14 +34,14 @@
 .stat-card h3 {
   font-size: 0.85rem;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 600;
   margin: 0;
 }
 
 .mini-chart {
   width: 60px;
   height: 24px;
-  color: var(--text-muted);
+  color: var(--button-bg);
 }
 
 .chart-present { color: var(--status-present); }
@@ -63,7 +63,7 @@
   stroke-width: 4;
 }
 
-.radial-progress .bg { stroke: rgba(255,255,255,0.1); }
+.radial-progress .bg { stroke: var(--glass-border); }
 .radial-progress .fill {
   stroke: var(--accent-color);
   stroke-linecap: round;
@@ -72,18 +72,17 @@
 
 .stat-value {
   font-size: 2.8rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-main);
   line-height: 1;
+  letter-spacing: -0.04em;
 }
 
 .text-present {
   color: var(--status-present);
-  text-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
 }
 .text-absent {
   color: var(--status-absent);
-  text-shadow: 0 0 20px rgba(248, 113, 113, 0.4);
 }
 
 .stat-label {
@@ -118,9 +117,9 @@
 .search-input {
   width: 100%;
   padding: 12px 16px 12px 40px;
-  background: rgba(255, 255, 255, 0.05); /* Glass input */
+  background: #FFFFFF;
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
+  border-radius: var(--border-radius);
   color: var(--text-main);
   font-family: inherit;
   font-size: 0.95rem;
@@ -129,8 +128,8 @@
 
 .search-input:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(108, 43, 217, 0.1);
 }
 
 .filter-actions {
@@ -143,15 +142,15 @@
 .sport-select {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #FFFFFF;
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
+  border-radius: var(--border-radius);
   color: var(--text-main);
   font-family: inherit;
   font-size: 0.95rem;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%235A5A66%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
   background-repeat: no-repeat;
   background-position: right 16px top 50%;
   background-size: 10px auto;
@@ -160,30 +159,30 @@
 
 .sport-select:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(108, 43, 217, 0.1);
 }
 
 .sport-select option {
-  background: #111; /* Dark dropdown */
+  background: #FFFFFF;
   color: var(--text-main);
 }
 
 .save-btn {
   padding: 12px 24px;
-  background-color: var(--accent-color);
+  background-color: var(--button-bg);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--border-radius);
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 0 20px var(--accent-glow);
   transition: all var(--transition-speed);
 }
 
 .save-btn:hover:not(:disabled) {
-  background-color: var(--accent-hover);
+  background-color: var(--accent-color);
 }
 
 .save-btn:disabled {
@@ -204,10 +203,8 @@
   padding: 1px;
   overflow-x: auto;
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  background: var(--secondary-bg);
-  backdrop-filter: blur(16px);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  border-radius: var(--border-radius);
+  background: #FFFFFF;
 }
 
 .loading-state {
