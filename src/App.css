@@ -9,7 +9,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
+  padding: 1.25rem 2.5rem;
+  border-bottom: 2px solid var(--glass-border);
+  background: #ffffff;
 }
 
 .logo {
@@ -35,27 +37,26 @@
   font-size: 1.5rem;
   margin: 0;
   color: var(--text-main);
-  background: none;
-  -webkit-background-clip: unset;
-  background-clip: unset;
-  -webkit-text-fill-color: unset;
 }
 
 .date-display {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
-  font-weight: 500;
-  padding: 0.5rem 1rem;
+  font-weight: 600;
+  padding: 0;
   background: transparent;
-  border-radius: 4px;
   border: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .header-title {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 2px;
+  align-items: flex-start;
+  gap: 0;
+  border-left: 2px solid var(--accent-color);
+  padding-left: 1rem;
 }
 
 .header-title h2 {
@@ -88,6 +89,9 @@
   flex-direction: column;
   gap: 2rem;
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
 }
 
 /* =========== Login Page =========== */
@@ -207,19 +211,20 @@
 
 .logout-btn {
   padding: 8px 16px;
-  background: transparent;
-  border: 1px solid var(--glass-border);
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-muted);
+  background: var(--text-main);
+  border: none;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: white;
   cursor: pointer;
   transition: all var(--transition-speed);
 }
 
 .logout-btn:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
+  background: var(--accent-color);
 }
 
 @media (max-width: 640px) {
@@ -235,33 +240,35 @@
 /* =========== Tabs Navigation =========== */
 .tabs-nav {
   display: flex;
-  gap: 8px;
-  padding: 8px;
-  margin-bottom: 8px;
+  gap: 32px;
+  padding: 0 16px;
+  border-bottom: 2px solid var(--glass-border);
 }
 
 .tab-link {
-  flex: 1;
-  padding: 12px;
+  padding: 16px 0;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   cursor: pointer;
   transition: all var(--transition-speed);
+  margin-bottom: -2px; /* Overlap border */
 }
 
 .tab-link.active {
-  background: var(--accent-color);
-  color: white;
-  box-shadow: 0 4px 12px rgba(164, 44, 52, 0.2);
+  color: var(--text-main);
+  border-bottom-color: var(--accent-color);
 }
 
 .tab-link:hover:not(.active) {
-  background: rgba(0,0,0,0.03);
   color: var(--text-main);
+  border-bottom-color: var(--text-muted);
 }
 
 .placeholder-view {

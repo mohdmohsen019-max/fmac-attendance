@@ -1,8 +1,8 @@
 .table-wrapper {
   width: 100%;
-  border-radius: var(--border-radius);
+  border-radius: 0; /* Flat edge-to-edge within container */
   overflow: hidden;
-  background: var(--secondary-bg);
+  background: transparent;
 }
 
 .attendance-table {
@@ -13,13 +13,13 @@
 
 .attendance-table th {
   padding: 16px 24px;
-  background: var(--secondary-bg);
-  color: #6b7280;
-  font-weight: 600;
+  background: var(--primary-bg);
+  color: var(--text-muted);
+  font-weight: 700;
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--glass-border);
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--text-main);
 }
 
 .attendance-table td {
@@ -33,7 +33,7 @@
 }
 
 .table-row:hover {
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: var(--primary-bg);
 }
 
 .table-row:last-child td {
@@ -76,23 +76,27 @@
 
 .badge {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: var(--accent-color);
-  color: white;
+  padding: 4px 8px;
+  border-radius: 2px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .timing-cell {
-  color: var(--text-main);
+  color: var(--text-muted);
   font-family: monospace;
   font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .coach-cell {
   color: var(--text-main);
+  font-weight: 600;
 }
 
 .status-col {
@@ -103,44 +107,47 @@
 .status-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 6px 16px;
+  border-radius: 2px;
   border: 1px solid transparent;
   background: transparent;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   position: relative;
   overflow: hidden;
+  transition: all var(--transition-speed);
+  width: 120px;
 }
 
 .status-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 0; /* Square indicator for structural look */
   transition: all var(--transition-speed);
 }
 
 .status-btn.present {
   background: var(--status-present-bg);
-  border-color: rgba(46, 160, 67, 0.3);
+  border-color: rgba(22, 101, 52, 0.2);
   color: var(--status-present);
 }
 
 .status-btn.present .status-indicator {
   background: var(--status-present);
-  box-shadow: 0 0 8px var(--status-present);
 }
 
 .status-btn.absent {
   background: var(--status-absent-bg);
-  border-color: rgba(229, 62, 62, 0.3);
+  border-color: rgba(153, 27, 27, 0.2);
   color: var(--status-absent);
 }
 
 .status-btn.absent .status-indicator {
   background: var(--status-absent);
-  box-shadow: 0 0 8px var(--status-absent);
 }
 
 .status-btn:hover {

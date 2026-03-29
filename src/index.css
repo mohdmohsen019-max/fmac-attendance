@@ -1,21 +1,21 @@
 :root {
-  --primary-bg: #f5f7f9;
+  --primary-bg: #f8fafc; /* Crisp utilitarian background */
   --secondary-bg: #ffffff;
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --text-main: #2b3643;
-  --text-muted: #6b7280;
+  --glass-border: #e2e8f0; /* Sharper line color */
+  --text-main: #0f172a;
+  --text-muted: #64748b;
   
   --accent-color: #a42c34; /* FMAC Red */
-  --accent-hover: #832229;
+  --accent-hover: #7f1d1d;
   
-  --status-present: #2ea043; /* Green for Present tag colors */
-  --status-present-bg: rgba(46, 160, 67, 0.1);
-  --status-absent: #e53e3e;
-  --status-absent-bg: rgba(229, 62, 62, 0.1);
+  --status-present: #166534; /* Deeper structural green */
+  --status-present-bg: #dcfce7;
+  --status-absent: #991b1b;
+  --status-absent-bg: #fee2e2;
   
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --border-radius: 8px;
-  --transition-speed: 0.3s;
+  --border-radius: 2px; /* High-performance sharp corners */
+  --transition-speed: 0.2s; /* Snappier transitions */
 }
 
 * {
@@ -37,20 +37,19 @@ body {
 
 #root {
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-/* Glassmorphism utility */
+/* Structural Data Panel *//* Renamed from glass-panel for design accuracy but keeping class name for compatibility */
 .glass-panel {
   background: var(--secondary-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--border-radius);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: none; /* Strict structural look, no soft floating */
 }
 
 /* Custom Scrollbar */
@@ -74,8 +73,9 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   color: var(--text-main);
-  font-weight: 700;
-  letter-spacing: -0.5px;
+  font-weight: 800; /* Bolder structural headers */
+  letter-spacing: -0.03em;
+  text-transform: uppercase; /* Sports branding feel */
 }
 
 a {

@@ -114,7 +114,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <header className="glass-panel main-header animate-fade-in">
+      <header className="main-header animate-fade-in">
         <div className="logo">
           <div className="logo-icon">
             <img src="/fmac-logo.png" alt="FMAC Logo" />
@@ -135,7 +135,7 @@ function App() {
       </header>
 
       <main className="main-content">
-        <nav className="tabs-nav glass-panel animate-fade-in">
+        <nav className="tabs-nav animate-fade-in">
           <button 
             className={`tab-link ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
