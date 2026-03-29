@@ -17,8 +17,18 @@ export default function Dashboard() {
     const q = query(collection(db, "players"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const playersData = [];
-      querySnapshot.forEach((doc) => {
-        playersData.push({ ...doc.data(), firestoreId: doc.id, status: doc.data().status || 'absent' });
+      const today = new Date().toLocaleDateString('en-CA');
+      querySnapshot.forEach((docSnapshot) => {
+        const data = docSnapshot.data();
+        let status = data.status || 'absent';
+        
+        if (status === 'present' && data.lastActionDate !== today) {
+          status = 'absent';
+          // Clean up stale 'present' status in background
+          updateDoc(docSnapshot.ref, { status: 'absent' }).catch(console.error);
+        }
+        
+        playersData.push({ ...data, firestoreId: docSnapshot.id, status });
       });
       setPlayers(playersData);
       setLoading(false);
@@ -37,9 +47,10 @@ export default function Dashboard() {
 
     const newStatus = player.status === 'present' ? 'absent' : 'present';
     const playerRef = doc(db, "players", firestoreId);
+    const today = new Date().toLocaleDateString('en-CA');
     
     try {
-      await updateDoc(playerRef, { status: newStatus });
+      await updateDoc(playerRef, { status: newStatus, lastActionDate: today });
     } catch (error) {
       console.error("Error updating player status:", error);
       alert("Failed to update status. Please check your internet connection.");
