@@ -143,28 +143,53 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <div className="stats-panel glass-panel animate-fade-in">
-        <div className="stat-item">
-          <h3>Total Active</h3>
+      <div className="stats-bento">
+        <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.1s'}}>
+          <div className="stat-header">
+            <h3>Total Active</h3>
+            <svg className="mini-chart" viewBox="0 0 100 30" preserveAspectRatio="none">
+              <path d="M0,25 C20,25 30,10 50,15 C70,20 80,5 100,5" fill="none" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </div>
           <div className="stat-value">{stats.total}</div>
           <p className="stat-label">Registered Players</p>
         </div>
-        <div className="stat-item">
-          <h3>Present</h3>
+        
+        <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.2s'}}>
+          <div className="stat-header">
+            <h3>Present</h3>
+            <svg className="mini-chart chart-present" viewBox="0 0 100 30" preserveAspectRatio="none">
+              <path d="M0,30 L0,20 C20,10 40,25 60,10 C80,-5 90,15 100,0 L100,30 Z" fill="currentColor" opacity="0.2" />
+              <path d="M0,20 C20,10 40,25 60,10 C80,-5 90,15 100,0" fill="none" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </div>
           <div className="stat-value text-present">{stats.present}</div>
           <p className="stat-label">Checked in</p>
         </div>
-        <div className="stat-item">
-          <h3>Absent</h3>
+
+        <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.3s'}}>
+          <div className="stat-header">
+            <h3>Absent</h3>
+            <svg className="mini-chart chart-absent" viewBox="0 0 100 30" preserveAspectRatio="none">
+              <path d="M0,30 L0,5 C20,15 30,5 50,20 C70,35 80,10 100,20 L100,30 Z" fill="currentColor" opacity="0.2"/>
+              <path d="M0,5 C20,15 30,5 50,20 C70,35 80,10 100,20" fill="none" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </div>
           <div className="stat-value text-absent">{stats.absent}</div>
           <p className="stat-label">Not arrived</p>
         </div>
-        <div className="stat-item final-stat">
-          <h3>Rate</h3>
-          <div className="stat-value">{stats.rate}%</div>
-          <div className="progress-bar-container">
-            <div className="progress-bar" style={{width: `${stats.rate}%`}}></div>
+
+        <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.4s'}}>
+          <div className="stat-header">
+            <h3>Attendance Rate</h3>
+            <div className="radial-progress" style={{'--progress': `${stats.rate}%`}}>
+              <svg viewBox="0 0 36 36">
+                <path className="bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path className="fill" strokeDasharray={`${stats.rate}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              </svg>
+            </div>
           </div>
+          <div className="stat-value">{stats.rate}%</div>
         </div>
       </div>
 
