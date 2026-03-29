@@ -143,23 +143,23 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <div className="stats-grid">
-        <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.1s'}}>
+      <div className="stats-grid glass-panel animate-fade-in">
+        <div className="stat-item">
           <h3>Total Active</h3>
           <div className="stat-value">{stats.total}</div>
           <p className="stat-label">Registered Players</p>
         </div>
-        <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.2s'}}>
+        <div className="stat-item">
           <h3>Present Today</h3>
           <div className="stat-value text-present">{stats.present}</div>
           <p className="stat-label">Checked in</p>
         </div>
-        <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.3s'}}>
+        <div className="stat-item">
           <h3>Absent</h3>
           <div className="stat-value text-absent">{stats.absent}</div>
           <p className="stat-label">Not arrived</p>
         </div>
-        <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.4s'}}>
+        <div className="stat-item final-stat">
           <h3>Attendance Rate</h3>
           <div className="stat-value">{stats.rate}%</div>
           <div className="progress-bar-container">
@@ -212,7 +212,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="table-container glass-panel animate-fade-in" style={{animationDelay: '0.6s'}}>
+      <div className="table-container animate-fade-in" style={{animationDelay: '0.6s'}}>
         {loading ? (
           <div className="loading-state">
             <p>Connection to Firebase...</p>
