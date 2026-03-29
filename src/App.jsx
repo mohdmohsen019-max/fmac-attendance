@@ -121,7 +121,7 @@ function App() {
           </div>
         </div>
         <div className="header-title">
-          <h2>Attendance System</h2>
+          <h2>FMAC Attendance System</h2>
           <span>Fujairah Martial Arts Club</span>
         </div>
         <div className="header-right">

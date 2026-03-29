@@ -59,14 +59,13 @@
 }
 
 .header-title h2 {
-  font-size: 1.8rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-family: 'HeadingNowTrial-55MediumItalic', 'HeadingNowTrial', sans-serif;
+  font-size: 2rem;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0;
   margin: 0;
-  background: linear-gradient(90deg, #7C3AED 0%, #110F24 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #a42c34; /* FMAC Cherry Red */
 }
 
 .header-title span {
@@ -118,7 +117,9 @@
 }
 
 .login-logo img {
-  height: 64px;
+  height: 40px;
+  width: auto;
+  mix-blend-mode: darken;
   object-fit: contain;
 }
 

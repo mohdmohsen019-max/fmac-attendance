@@ -139,17 +139,16 @@ export default function Dashboard() {
     const present = players.filter(p => p.status === 'present').length;
     const rate = total === 0 ? 0 : Math.round((present / total) * 100);
     return { total, present, absent: total - present, rate };
-  }, [players]);
+  }, [players]);  const presentPct = stats.total > 0 ? (stats.present / stats.total) * 100 : 0;
+  const absentPct = stats.total > 0 ? (stats.absent / stats.total) * 100 : 0;
 
   return (
     <div className="dashboard-container">
-      <div className="stats-bento">
+      <div className="dashboard-top">
+        <div className="stats-bento">
         <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.1s'}}>
           <div className="stat-header">
             <h3>Total Active</h3>
-            <svg className="mini-chart" viewBox="0 0 100 30" preserveAspectRatio="none">
-              <path d="M0,25 C20,25 30,10 50,15 C70,20 80,5 100,5" fill="none" stroke="currentColor" strokeWidth="2" />
-            </svg>
           </div>
           <div className="stat-value">{stats.total}</div>
           <p className="stat-label">Registered Players</p>
@@ -158,10 +157,6 @@ export default function Dashboard() {
         <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.2s'}}>
           <div className="stat-header">
             <h3>Present</h3>
-            <svg className="mini-chart chart-present" viewBox="0 0 100 30" preserveAspectRatio="none">
-              <path d="M0,30 L0,20 C20,10 40,25 60,10 C80,-5 90,15 100,0 L100,30 Z" fill="currentColor" opacity="0.2" />
-              <path d="M0,20 C20,10 40,25 60,10 C80,-5 90,15 100,0" fill="none" stroke="currentColor" strokeWidth="2" />
-            </svg>
           </div>
           <div className="stat-value text-present">{stats.present}</div>
           <p className="stat-label">Checked in</p>
@@ -170,10 +165,6 @@ export default function Dashboard() {
         <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.3s'}}>
           <div className="stat-header">
             <h3>Absent</h3>
-            <svg className="mini-chart chart-absent" viewBox="0 0 100 30" preserveAspectRatio="none">
-              <path d="M0,30 L0,5 C20,15 30,5 50,20 C70,35 80,10 100,20 L100,30 Z" fill="currentColor" opacity="0.2"/>
-              <path d="M0,5 C20,15 30,5 50,20 C70,35 80,10 100,20" fill="none" stroke="currentColor" strokeWidth="2" />
-            </svg>
           </div>
           <div className="stat-value text-absent">{stats.absent}</div>
           <p className="stat-label">Not arrived</p>
@@ -182,16 +173,49 @@ export default function Dashboard() {
         <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.4s'}}>
           <div className="stat-header">
             <h3>Attendance Rate</h3>
-            <div className="radial-progress" style={{'--progress': `${stats.rate}%`}}>
-              <svg viewBox="0 0 36 36">
-                <path className="bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <path className="fill" strokeDasharray={`${stats.rate}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              </svg>
-            </div>
           </div>
           <div className="stat-value">{stats.rate}%</div>
+          <p className="stat-label">Overall Completion</p>
         </div>
       </div>
+
+      <div className="chart-bento glass-panel animate-fade-in" style={{animationDelay: '0.5s'}}>
+        <h3 className="chart-title">Overview</h3>
+        <div className="nested-chart-container">
+          <svg viewBox="0 0 100 100" className="nested-chart">
+            {/* Total Ring */}
+            <circle cx="50" cy="50" r="38" fill="none" stroke="var(--glass-border)" strokeWidth="6" />
+            <circle cx="50" cy="50" r="38" fill="none" stroke="var(--accent-color)" strokeWidth="6" 
+                    strokeLinecap="round" strokeDasharray="238.7 238.7" 
+                    transform="rotate(-90 50 50)" />
+            
+            {/* Present Ring */}
+            <circle cx="50" cy="50" r="29" fill="none" stroke="var(--status-present-bg)" strokeWidth="6" />
+            <circle cx="50" cy="50" r="29" fill="none" stroke="var(--status-present)" strokeWidth="6" 
+                    strokeLinecap="round" strokeDasharray={`${(presentPct/100) * 182.2} 182.2`} 
+                    transform="rotate(-90 50 50)" />
+                    
+            {/* Absent Ring */}
+            <circle cx="50" cy="50" r="20" fill="none" stroke="var(--status-absent-bg)" strokeWidth="6" />
+            <circle cx="50" cy="50" r="20" fill="none" stroke="var(--status-absent)" strokeWidth="6" 
+                    strokeLinecap="round" strokeDasharray={`${(absentPct/100) * 125.6} 125.6`} 
+                    transform="rotate(-90 50 50)" />
+                    
+            {/* Rate Inner Ring */}
+            <circle cx="50" cy="50" r="11" fill="none" stroke="#F4F4F0" strokeWidth="6" />
+            <circle cx="50" cy="50" r="11" fill="none" stroke="#F59E0B" strokeWidth="6" 
+                    strokeLinecap="round" strokeDasharray={`${(stats.rate/100) * 69.1} 69.1`} 
+                    transform="rotate(-90 50 50)" />
+          </svg>
+          <div className="chart-labels">
+            <div className="chart-label"><span className="dot" style={{background: 'var(--accent-color)'}}></span> Total</div>
+            <div className="chart-label"><span className="dot" style={{background: 'var(--status-present)'}}></span> Present</div>
+            <div className="chart-label"><span className="dot" style={{background: 'var(--status-absent)'}}></span> Absent</div>
+            <div className="chart-label"><span className="dot" style={{background: '#F59E0B'}}></span> Rate</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
       <div className="controls-panel glass-panel animate-fade-in" style={{animationDelay: '0.5s'}}>
         <div className="search-box">
