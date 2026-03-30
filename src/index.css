@@ -5,7 +5,8 @@
   --text-main: #0B0A1A; /* Deep indigo/black */
   --text-muted: #5A5A66; /* Muted greyish-indigo */
   
-  --accent-color: #6C2BD9; /* UX Pilot Purple */
+  --accent-color: #a42c34; /* FMAC Cherry Red */
+  --accent-hover: #8b232a;
   --accent-glow: transparent;
   
   --button-bg: #110F24; /* Dark navy "Sign up" color */
@@ -69,7 +70,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #30363d;
+  background: var(--glass-border);
   border-radius: 4px;
 }
 

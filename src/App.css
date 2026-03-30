@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'HeadingNow-65MediumItalic';
+  src: url('./assets/HeadingNow-65MediumItalic.otf') format('opentype');
+  font-weight: normal;
+  font-style: italic;
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
@@ -51,27 +58,35 @@
 }
 
 .header-title {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.title-group {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding-left: 1.5rem;
+  align-items: center;
+  gap: 0;
 }
 
 .header-title h2 {
-  font-family: 'HeadingNowTrial-55MediumItalic', 'HeadingNowTrial', sans-serif;
-  font-size: 2rem;
+  font-family: 'HeadingNow-65MediumItalic', sans-serif;
+  font-size: 2.2rem;
   font-weight: 500;
   font-style: italic;
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
   margin: 0;
   color: #a42c34; /* FMAC Cherry Red */
+  line-height: 1;
 }
 
-.header-title span {
-  font-size: 0.75rem;
+.header-title .subtitle {
+  font-size: 0.85rem;
   color: var(--text-muted);
-  font-weight: 400;
+  font-weight: 500;
+  margin-top: 4px;
 }
 
 @media (max-width: 640px) {

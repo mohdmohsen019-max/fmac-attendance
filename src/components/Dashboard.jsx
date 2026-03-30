@@ -185,7 +185,7 @@ export default function Dashboard() {
           <svg viewBox="0 0 100 100" className="nested-chart">
             {/* Total Ring */}
             <circle cx="50" cy="50" r="38" fill="none" stroke="var(--glass-border)" strokeWidth="6" />
-            <circle cx="50" cy="50" r="38" fill="none" stroke="var(--accent-color)" strokeWidth="6" 
+            <circle cx="50" cy="50" r="38" fill="none" stroke="var(--button-bg)" strokeWidth="6" 
                     strokeLinecap="round" strokeDasharray="238.7 238.7" 
                     transform="rotate(-90 50 50)" />
             
@@ -203,15 +203,15 @@ export default function Dashboard() {
                     
             {/* Rate Inner Ring */}
             <circle cx="50" cy="50" r="11" fill="none" stroke="#F4F4F0" strokeWidth="6" />
-            <circle cx="50" cy="50" r="11" fill="none" stroke="#F59E0B" strokeWidth="6" 
+            <circle cx="50" cy="50" r="11" fill="none" stroke="var(--accent-color)" strokeWidth="6" 
                     strokeLinecap="round" strokeDasharray={`${(stats.rate/100) * 69.1} 69.1`} 
                     transform="rotate(-90 50 50)" />
           </svg>
           <div className="chart-labels">
-            <div className="chart-label"><span className="dot" style={{background: 'var(--accent-color)'}}></span> Total</div>
+            <div className="chart-label"><span className="dot" style={{background: 'var(--button-bg)'}}></span> Total</div>
             <div className="chart-label"><span className="dot" style={{background: 'var(--status-present)'}}></span> Present</div>
             <div className="chart-label"><span className="dot" style={{background: 'var(--status-absent)'}}></span> Absent</div>
-            <div className="chart-label"><span className="dot" style={{background: '#F59E0B'}}></span> Rate</div>
+            <div className="chart-label"><span className="dot" style={{background: 'var(--accent-color)'}}></span> Rate</div>
           </div>
         </div>
       </div>

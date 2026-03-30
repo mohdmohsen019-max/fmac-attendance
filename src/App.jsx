@@ -32,7 +32,7 @@ function LoginPage({ onLogin }) {
     <div className="login-overlay">
       <div className="login-card glass-panel animate-fade-in">
         <div className="login-logo">
-          <img src="/fmac-logo.png" alt="FMAC Logo" />
+          <img src="/fmac-logo-new.png" alt="FMAC Logo" />
         </div>
         <h2 className="login-title">Attendance System</h2>
         <p className="login-subtitle">Admin Access Only</p>
@@ -117,12 +117,14 @@ function App() {
       <header className="main-header animate-fade-in">
         <div className="logo">
           <div className="logo-icon">
-            <img src="/fmac-logo.png" alt="FMAC Logo" />
+            <img src="/fmac-logo-new.png" alt="FMAC Logo" />
           </div>
         </div>
         <div className="header-title">
-          <h2>FMAC Attendance System</h2>
-          <span>Fujairah Martial Arts Club</span>
+          <div className="title-group">
+            <h2>FMAC Attendance System</h2>
+            <span className="subtitle">Fujairah Martial Arts Club</span>
+          </div>
         </div>
         <div className="header-right">
           <div className="date-display">
