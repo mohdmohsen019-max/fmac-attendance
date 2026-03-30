@@ -180,11 +180,12 @@
 }
 
 .player-card {
-  padding: 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  background: #FFFFFF;
 }
 
 .player-card:last-child {
@@ -200,13 +201,36 @@
 
 .player-card-details {
   display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 0;
+  border-top: 1px dashed var(--glass-border);
+  padding-top: 10px;
+}
+
+.details-row {
+  display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  padding-left: 48px;
+  gap: 8px 16px;
 }
 
 .card-detail {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (max-width: 480px) {
+  .player-card-top {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  
+  .status-btn {
+    width: 100px;
+    padding: 4px 12px;
+    font-size: 0.7rem;
+  }
 }

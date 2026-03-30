@@ -18,6 +18,13 @@
   gap: 16px;
 }
 
+@media (max-width: 600px) {
+  .stats-bento {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
 .chart-bento {
   flex: 1.5;
   padding: 20px;
@@ -25,6 +32,13 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+}
+
+@media (max-width: 900px) {
+  .chart-bento {
+    width: 100%;
+    align-items: flex-start;
+  }
 }
 
 .chart-title {
@@ -40,6 +54,21 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+}
+
+@media (max-width: 480px) {
+  .nested-chart-container {
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+  
+  .chart-labels {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 16px;
+  }
 }
 
 .nested-chart {
@@ -127,6 +156,13 @@
   flex-wrap: wrap;
 }
 
+@media (max-width: 768px) {
+  .controls-panel {
+    padding: 16px;
+    gap: 12px;
+  }
+}
+
 .search-box {
   flex: 1;
   min-width: 250px;
@@ -141,6 +177,13 @@
   width: 18px;
   height: 18px;
   color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+  .search-box {
+    width: 100%;
+    min-width: 100%;
+  }
 }
 
 .search-input {
@@ -166,6 +209,14 @@
   align-items: center;
   gap: 12px;
   min-width: 150px;
+}
+
+@media (max-width: 600px) {
+  .filter-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .sport-select {

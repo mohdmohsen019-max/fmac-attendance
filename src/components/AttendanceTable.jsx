@@ -78,9 +78,11 @@ export default function AttendanceTable({ players, onToggleStatus }) {
               </button>
             </div>
             <div className="player-card-details">
-              <span className="badge badge-sport">{player.sport}</span>
-              <span className="card-detail">🕐 {player.classTiming}</span>
-              <span className="card-detail">👤 {player.coach}</span>
+              <span className="badge badge-sport" style={{ alignSelf: 'flex-start', marginBottom: '4px' }}>{player.sport}</span>
+              <div className="details-row">
+                <span className="card-detail">🕐 {player.classTiming}</span>
+                <span className="card-detail">👤 {player.coach}</span>
+              </div>
             </div>
           </div>
         ))}

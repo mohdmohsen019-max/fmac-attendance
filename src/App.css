@@ -89,14 +89,43 @@
   margin-top: 4px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .main-header {
-    padding: 1rem;
-    flex-wrap: wrap;
-    gap: 8px;
+    padding: 1rem 1.5rem;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    text-align: center;
   }
-  .header-title h2 { font-size: 0.85rem; }
-  .date-display { font-size: 0.8rem; }
+  
+  .logo {
+    justify-content: center;
+  }
+  
+  .header-title {
+    padding-left: 0;
+  }
+
+  .header-title h2 { 
+    font-size: 1.6rem; 
+  }
+  
+  .title-group {
+    align-items: center;
+  }
+
+  .date-display { 
+    font-size: 0.75rem; 
+  }
+  
+  .header-right {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--glass-border);
+    padding-top: 1rem;
+  }
 }
 
 .main-content {
@@ -108,6 +137,13 @@
   margin: 0 auto;
   padding: 3rem 2rem;
   position: relative;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1.5rem 1rem;
+    gap: 1.5rem;
+  }
 }
 
 /* =========== Login Page =========== */
@@ -129,6 +165,12 @@
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 1.5rem;
+  }
 }
 
 .login-logo img {
@@ -243,14 +285,13 @@
   background: var(--accent-color);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .header-right {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
   }
-  .logout-btn { font-size: 0.75rem; padding: 6px 12px; }
-  #root { padding: 1rem; }
+  .logout-btn { font-size: 0.8rem; padding: 8px 16px; }
 }
 
 /* =========== Tabs Navigation =========== */
@@ -308,14 +349,29 @@
   border: 2px dashed var(--glass-border);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .tabs-nav {
-    flex-direction: column;
-    gap: 4px;
+    justify-content: flex-start;
+    gap: 1.5rem;
+    padding: 0.5rem 0 1rem 0;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: calc(100% + 2rem);
+    margin-left: -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    scrollbar-width: none;
   }
+  
+  .tabs-nav::-webkit-scrollbar {
+    display: none;
+  }
+  
   .tab-link {
-    padding: 10px;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    padding: 8px 0;
   }
 }
 
