@@ -74,12 +74,22 @@ function App() {
   const [initializing, setInitializing] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
 
+  const [currentTime, setCurrentTime] = useState(new Date());
+
   useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setInitializing(false);
     });
-    return () => unsubscribe();
+
+    return () => {
+      clearInterval(timer);
+      unsubscribe();
+    };
   }, []);
 
   const handleLogout = () => {
@@ -128,7 +138,13 @@ function App() {
         </div>
         <div className="header-right">
           <div className="date-display">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            <span className="current-date">
+              {currentTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </span>
+            <span className="time-divider">|</span>
+            <span className="current-time">
+              {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+            </span>
           </div>
           <button className="logout-btn" onClick={handleLogout}>
             Sign Out

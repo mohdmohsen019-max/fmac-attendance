@@ -47,14 +47,26 @@
 }
 
 .date-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 0.85rem;
   color: var(--text-muted);
   font-weight: 600;
-  padding: 0;
-  background: transparent;
-  border: none;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.time-divider {
+  opacity: 0.3;
+  color: var(--text-muted);
+}
+
+.current-time {
+  color: var(--accent-color);
+  font-variant-numeric: tabular-nums;
+  min-width: 100px;
+  text-align: right;
 }
 
 .header-title {
