@@ -3,7 +3,7 @@ import { db } from '../firebase';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { exportToExcel, exportToCSV, printToPDF } from '../utils/exportEngine';
 import ConfirmModal from './ConfirmModal';
-import { performGlobalReset } from '../utils/systemUtils';
+import { resetTransportationOnly } from '../utils/systemUtils';
 import './AttendanceTable.css';
 import './TransportationModule.css';
 
@@ -16,7 +16,7 @@ export default function TransportationModule() {
   const handleReset = async () => {
     setIsResetting(true);
     try {
-      await performGlobalReset();
+      await resetTransportationOnly();
     } catch (e) {
       alert("Reset failed.");
     } finally {
@@ -172,9 +172,9 @@ export default function TransportationModule() {
             className="tm-btn danger" 
             onClick={() => setResetModalOpen(true)}
             disabled={isResetting}
-            title="Wipe data and start fresh"
+            title="Clear all current transportation assignments"
           >
-            {isResetting ? "..." : "Reset System"}
+            {isResetting ? "..." : "Reset Transport List"}
           </button>
         </div>
       </div>
@@ -359,9 +359,9 @@ export default function TransportationModule() {
         onClose={() => setResetModalOpen(false)}
         onConfirm={handleReset}
         isDanger={true}
-        title="Reset All Logs?"
-        message="This will wipe all historical data and reset current player transportation assignments. This cannot be undone."
-        confirmText="Yes, Reset Everything"
+        title="Reset Transport List?"
+        message="This will clear all current transportation assignments for players. Arrival status (Present/Absent) and History logs will NOT be affected."
+        confirmText="Yes, Reset Transport"
         requiredPasscode="Fm@c.2020"
       />
     </div>

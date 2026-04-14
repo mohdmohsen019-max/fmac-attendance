@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
 import ConfirmModal from './ConfirmModal';
-import { performGlobalReset } from '../utils/systemUtils';
+import { clearAttendanceHistory } from '../utils/systemUtils';
 import './AttendanceHistory.css';
 
 export default function AttendanceHistory() {
@@ -15,7 +15,7 @@ export default function AttendanceHistory() {
   const handleReset = async () => {
     setIsResetting(true);
     try {
-      await performGlobalReset();
+      await clearAttendanceHistory();
       setSelectedLog(null);
     } catch (e) {
       alert("Reset failed. Check console for details.");
@@ -149,7 +149,7 @@ export default function AttendanceHistory() {
         onConfirm={handleReset}
         isDanger={true}
         title="Clear All History?"
-        message="This will permanently delete all attendance logs. This action cannot be reversed."
+        message="This will permanently delete all historical attendance logs. Current player arrival statuses will NOT be affected."
         confirmText="Yes, Clear All"
         requiredPasscode="Fm@c.2020"
       />

@@ -4,7 +4,7 @@ import { db } from '../firebase';
 import { collection, onSnapshot, query, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import AttendanceTable from './AttendanceTable';
 import ConfirmModal from './ConfirmModal';
-import { performGlobalReset } from '../utils/systemUtils';
+import { resetDailyAttendanceStatus } from '../utils/systemUtils';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -18,12 +18,12 @@ export default function Dashboard() {
   const [missingTransportModal, setMissingTransportModal] = useState({ isOpen: false, players: [] });
   const [resetModalOpen, setResetModalOpen] = useState(false);
 
-  const handleGlobalReset = async () => {
+  const handleDailyReset = async () => {
     setIsSaving(true);
-    setSaveMessage('Resetting System...');
+    setSaveMessage('Resetting Attendance...');
     try {
-      await performGlobalReset();
-      setSaveMessage('✅ System Reset Successfully!');
+      await resetDailyAttendanceStatus();
+      setSaveMessage('✅ Attendance Reset Successfully!');
       setTimeout(() => setSaveMessage(''), 5000);
     } catch (e) {
       console.error(e);
@@ -367,9 +367,9 @@ export default function Dashboard() {
             onClick={() => setResetModalOpen(true)}
             disabled={isSaving}
             style={{ backgroundColor: '#DC2626' }}
-            title="Delete all previous historical entries and start freshly"
+            title="Reset all arrival statuses for today"
           >
-            🔥 System Reset
+            🔥 Reset Daily List
           </button>
           {saveMessage && <span className="save-msg">{saveMessage}</span>}
         </div>
@@ -485,15 +485,15 @@ export default function Dashboard() {
         </div>, document.body
       )}
 
-      {/* SYSTEM RESET CONFIRMATION MODAL */}
+      {/* DAILY RESET CONFIRMATION MODAL */}
       <ConfirmModal 
         isOpen={resetModalOpen}
         onClose={() => setResetModalOpen(false)}
-        onConfirm={handleGlobalReset}
+        onConfirm={handleDailyReset}
         isDanger={true}
-        title="System Reset"
-        message="This will PERMANENTLY delete all historical attendance logs and reset all player arrival statuses. This action cannot be undone."
-        confirmText="Yes, Reset Everything"
+        title="Reset Today's Attendance?"
+        message="This will reset all player statuses to 'Absent' for today. Previous history logs will NOT be affected."
+        confirmText="Yes, Reset Daily List"
         requiredPasscode="Fm@c.2020"
       />
     </div>

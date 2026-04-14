@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import ConfirmModal from './ConfirmModal';
-import { performGlobalReset } from '../utils/systemUtils';
+import { clearAttendanceHistory } from '../utils/systemUtils';
 import './AnalyticsView.css';
 
 export default function AnalyticsView() {
@@ -16,7 +16,7 @@ export default function AnalyticsView() {
   const handleReset = async () => {
     setIsResetting(true);
     try {
-      await performGlobalReset();
+      await clearAttendanceHistory();
     } catch (e) {
       alert("Reset failed.");
     } finally {
@@ -178,7 +178,7 @@ export default function AnalyticsView() {
         onConfirm={handleReset}
         isDanger={true}
         title="Wipe Analytics History?"
-        message="This will delete all historical data. Analytics will be reset to zero."
+        message="This will delete the historical data used for these charts. Today's active attendance will NOT be affected."
         confirmText="Yes, Wipe Data"
         requiredPasscode="Fm@c.2020"
       />
