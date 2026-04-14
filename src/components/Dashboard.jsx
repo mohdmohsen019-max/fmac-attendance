@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import AttendanceTable from './AttendanceTable';
+import ConfirmModal from './ConfirmModal';
+import { performGlobalReset } from '../utils/systemUtils';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -14,6 +16,22 @@ export default function Dashboard() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [missingTransportModal, setMissingTransportModal] = useState({ isOpen: false, players: [] });
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+
+  const handleGlobalReset = async () => {
+    setIsSaving(true);
+    setSaveMessage('Resetting System...');
+    try {
+      await performGlobalReset();
+      setSaveMessage('✅ System Reset Successfully!');
+      setTimeout(() => setSaveMessage(''), 5000);
+    } catch (e) {
+      console.error(e);
+      setSaveMessage('❌ Reset Failed');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // TEMP SCRIPT TO FORCE UPDATE CLASS TIMINGS FROM EXCEL
   const syncExcelDB = async () => {
@@ -344,6 +362,15 @@ export default function Dashboard() {
           >
             ⚠️ Sync XLSX to DB
           </button>
+          <button 
+            className="save-btn" 
+            onClick={() => setResetModalOpen(true)}
+            disabled={isSaving}
+            style={{ backgroundColor: '#DC2626' }}
+            title="Delete all previous historical entries and start freshly"
+          >
+            🔥 System Reset
+          </button>
           {saveMessage && <span className="save-msg">{saveMessage}</span>}
         </div>
       </div>
@@ -457,6 +484,18 @@ export default function Dashboard() {
           </div>
         </div>, document.body
       )}
+
+      {/* SYSTEM RESET CONFIRMATION MODAL */}
+      <ConfirmModal 
+        isOpen={resetModalOpen}
+        onClose={() => setResetModalOpen(false)}
+        onConfirm={handleGlobalReset}
+        isDanger={true}
+        title="System Reset"
+        message="This will PERMANENTLY delete all historical attendance logs and reset all player arrival statuses. This action cannot be undone."
+        confirmText="Yes, Reset Everything"
+        requiredPasscode="Fm@c.2020"
+      />
     </div>
   );
 }

@@ -34,6 +34,31 @@
   cursor: pointer;
 }
 
+.analytics-reset-btn {
+  padding: 10px 20px;
+  background: rgba(220, 38, 38, 0.05);
+  color: #DC2626;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-spring);
+  white-space: nowrap;
+}
+
+.analytics-reset-btn:hover:not(:disabled) {
+  background: #DC2626;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.analytics-reset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .analytics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

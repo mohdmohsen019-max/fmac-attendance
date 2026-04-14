@@ -2,12 +2,27 @@ import { useState, useMemo, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { exportToExcel, exportToCSV, printToPDF } from '../utils/exportEngine';
+import ConfirmModal from './ConfirmModal';
+import { performGlobalReset } from '../utils/systemUtils';
 import './AttendanceTable.css';
 import './TransportationModule.css';
 
 export default function TransportationModule() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleReset = async () => {
+    setIsResetting(true);
+    try {
+      await performGlobalReset();
+    } catch (e) {
+      alert("Reset failed.");
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   // Filters
   const [filterSport, setFilterSport] = useState('All');
@@ -152,6 +167,14 @@ export default function TransportationModule() {
           <button className="tm-btn primary" onClick={() => handleExport('pdf')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
             Print PDF
+          </button>
+          <button 
+            className="tm-btn danger" 
+            onClick={() => setResetModalOpen(true)}
+            disabled={isResetting}
+            title="Wipe data and start fresh"
+          >
+            {isResetting ? "..." : "Reset System"}
           </button>
         </div>
       </div>
@@ -331,6 +354,16 @@ export default function TransportationModule() {
         )}
       </div>
 
+      <ConfirmModal 
+        isOpen={resetModalOpen}
+        onClose={() => setResetModalOpen(false)}
+        onConfirm={handleReset}
+        isDanger={true}
+        title="Reset All Logs?"
+        message="This will wipe all historical data and reset current player transportation assignments. This cannot be undone."
+        confirmText="Yes, Reset Everything"
+        requiredPasscode="Fm@c.2020"
+      />
     </div>
   );
 }

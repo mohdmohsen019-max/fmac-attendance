@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, query, onSnapshot } from 'firebase/firestore';
+import ConfirmModal from './ConfirmModal';
+import { performGlobalReset } from '../utils/systemUtils';
 import './AnalyticsView.css';
 
 export default function AnalyticsView() {
@@ -8,6 +10,19 @@ export default function AnalyticsView() {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleReset = async () => {
+    setIsResetting(true);
+    try {
+      await performGlobalReset();
+    } catch (e) {
+      alert("Reset failed.");
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   useEffect(() => {
     // Fetch all logs to calculate analytics
@@ -91,6 +106,14 @@ export default function AnalyticsView() {
               <option key={y} value={y}>{y}</option>
             ))}
           </select>
+          <button 
+            className="analytics-reset-btn" 
+            onClick={() => setResetModalOpen(true)}
+            disabled={isResetting}
+            title="Wipe data and start fresh"
+          >
+            {isResetting ? "..." : "Reset System"}
+          </button>
         </div>
       </div>
 
@@ -148,6 +171,17 @@ export default function AnalyticsView() {
           </tbody>
         </table>
       </div>
+
+      <ConfirmModal 
+        isOpen={resetModalOpen}
+        onClose={() => setResetModalOpen(false)}
+        onConfirm={handleReset}
+        isDanger={true}
+        title="Wipe Analytics History?"
+        message="This will delete all historical data. Analytics will be reset to zero."
+        confirmText="Yes, Wipe Data"
+        requiredPasscode="Fm@c.2020"
+      />
     </div>
   );
 }

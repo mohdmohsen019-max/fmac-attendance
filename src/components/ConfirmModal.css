@@ -1,0 +1,204 @@
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.confirm-modal {
+  width: 100%;
+  max-width: 420px;
+  background: var(--secondary-bg);
+  border-radius: 20px;
+  box-shadow: var(--shadow-float);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+
+.confirm-modal-header {
+  padding: 32px 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.confirm-icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(164, 44, 52, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.confirm-icon-circle.danger {
+  background: rgba(220, 38, 38, 0.1);
+  color: #DC2626;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.2); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
+
+.confirm-modal-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.confirm-modal-body {
+  padding: 0 32px 32px;
+  text-align: center;
+}
+
+.confirm-message {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.passcode-field-wrapper {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.passcode-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  padding-left: 4px;
+}
+
+.confirm-passcode-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: white;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 1.1rem;
+  letter-spacing: 0.2em;
+  transition: all var(--dur-fast) var(--ease-spring);
+}
+
+.confirm-passcode-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 4px rgba(164, 44, 52, 0.1);
+}
+
+.confirm-passcode-input.error {
+  border-color: #DC2626;
+  background: #FFF5F5;
+  animation: shake 0.4s ease;
+}
+
+.passcode-error-msg {
+  font-size: 0.8rem;
+  color: #DC2626;
+  font-weight: 600;
+  padding-left: 4px;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  50% { transform: translateX(8px); }
+  75% { transform: translateX(-4px); }
+}
+
+.confirm-modal-footer {
+  padding: 24px 32px 32px;
+  display: flex;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.confirm-btn-cancel {
+  flex: 1;
+  padding: 14px;
+  border: 1px solid var(--glass-border);
+  background: white;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-spring);
+  color: var(--text-muted);
+}
+
+.confirm-btn-cancel:hover {
+  background: #f8f8f8;
+  border-color: var(--text-muted);
+  color: var(--text-main);
+}
+
+.confirm-btn-action {
+  flex: 2;
+  padding: 14px;
+  border: none;
+  background: var(--button-bg);
+  color: white;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-spring);
+  box-shadow: 0 4px 12px var(--shadow-sm);
+}
+
+.confirm-btn-action.danger {
+  background: #DC2626;
+}
+
+.confirm-btn-action:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.confirm-btn-action:active {
+  transform: translateY(0);
+}
+
+/* Reusing animations from global */
+.animate-fade-in {
+  animation: fadeIn var(--dur-med) ease;
+}
+
+.animate-pop-in {
+  animation: popIn var(--dur-med) var(--ease-spring);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}

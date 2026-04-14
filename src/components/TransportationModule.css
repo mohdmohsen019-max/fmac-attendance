@@ -72,6 +72,24 @@
   background: #A80013;
 }
 
+.tm-btn.danger {
+  background: rgba(220, 38, 38, 0.05);
+  color: #DC2626;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.tm-btn.danger:hover:not(:disabled) {
+  background: #DC2626;
+  color: white;
+  border-color: #DC2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.tm-btn.danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Summary Bento Grid */
 .tm-bento-grid {
   display: grid;

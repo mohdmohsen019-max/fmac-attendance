@@ -1,12 +1,28 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
+import ConfirmModal from './ConfirmModal';
+import { performGlobalReset } from '../utils/systemUtils';
 import './AttendanceHistory.css';
 
 export default function AttendanceHistory() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedLog, setSelectedLog] = useState(null);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleReset = async () => {
+    setIsResetting(true);
+    try {
+      await performGlobalReset();
+      setSelectedLog(null);
+    } catch (e) {
+      alert("Reset failed. Check console for details.");
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   useEffect(() => {
     const q = query(
@@ -41,7 +57,17 @@ export default function AttendanceHistory() {
   return (
     <div className="history-container">
       <div className="history-sidebar glass-panel animate-fade-in">
-        <h3 className="sidebar-title">Recent Logs</h3>
+        <div className="sidebar-header-row">
+          <h3 className="sidebar-title">Recent Logs</h3>
+          <button 
+            className="reset-history-btn" 
+            onClick={() => setResetModalOpen(true)}
+            disabled={isResetting}
+            title="Clear all logs"
+          >
+            {isResetting ? "..." : "🗑️"}
+          </button>
+        </div>
         <div className="logs-list">
           {logs.map(log => (
             <div 
@@ -116,6 +142,17 @@ export default function AttendanceHistory() {
           </div>
         )}
       </div>
+
+      <ConfirmModal 
+        isOpen={resetModalOpen}
+        onClose={() => setResetModalOpen(false)}
+        onConfirm={handleReset}
+        isDanger={true}
+        title="Clear All History?"
+        message="This will permanently delete all attendance logs. This action cannot be reversed."
+        confirmText="Yes, Clear All"
+        requiredPasscode="Fm@c.2020"
+      />
     </div>
   );
 }
