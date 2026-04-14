@@ -373,12 +373,12 @@ export default function TransportationModule() {
         <table className="tm-agg-table">
           <thead>
             <tr>
-              <th>Player ID</th>
-              <th>Player Name</th>
-              <th>Sport</th>
-              <th>Class Timing</th>
-              <th>Date</th>
-              <th>Transportation Used</th>
+              <th style={{ width: '12%' }}>Player ID</th>
+              <th style={{ width: '25%' }}>Player Name</th>
+              <th style={{ width: '20%' }}>Sport</th>
+              <th style={{ width: '15%' }}>Class Timing</th>
+              <th style={{ width: '13%' }} className="center-col">Date</th>
+              <th style={{ width: '15%' }} className="center-col">Transportation Used</th>
             </tr>
           </thead>
           <tbody>
@@ -389,8 +389,8 @@ export default function TransportationModule() {
                   <td className="inst-name">{inst.name}</td>
                   <td className="inst-sport">{inst.sport}</td>
                   <td className="inst-timing">{inst.timing}</td>
-                  <td className="inst-date">{new Date(inst.date).toLocaleDateString('en-GB')}</td>
-                  <td className="inst-method">
+                  <td className="inst-date center-col">{new Date(inst.date).toLocaleDateString('en-GB')}</td>
+                  <td className="inst-method center-col">
                     <span className={`tm-transport-pill active`}>
                       {inst.transport}
                     </span>
