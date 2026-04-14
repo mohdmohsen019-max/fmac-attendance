@@ -191,12 +191,16 @@ export default function Dashboard() {
 
   const timings = useMemo(() => {
     const allTimings = new Set();
+    let hasNA = false;
     players.forEach(p => {
-      if (p.classTiming && p.classTiming !== 'N/A') {
+      if (p.classTiming && p.classTiming.trim() !== 'N/A') {
         allTimings.add(p.classTiming.trim());
+      } else {
+        hasNA = true;
       }
     });
-    return ['All', ...Array.from(allTimings).sort()];
+    const sortedTimings = Array.from(allTimings).sort();
+    return hasNA ? ['All', ...sortedTimings, 'N/A'] : ['All', ...sortedTimings];
   }, [players]);
 
   const filteredPlayers = useMemo(() => {
@@ -211,7 +215,8 @@ export default function Dashboard() {
         matchesSport = p.sports.map(s => s.toLowerCase()).includes(filterSport.toLowerCase());
       }
       
-      const matchesTiming = filterTiming === 'All' || p.classTiming?.trim() === filterTiming;
+      const pTiming = (p.classTiming && p.classTiming.trim() !== '') ? p.classTiming.trim() : 'N/A';
+      const matchesTiming = filterTiming === 'All' || pTiming === filterTiming;
 
       return matchesSearch && matchesSport && matchesTiming;
     });
