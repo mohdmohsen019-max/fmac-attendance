@@ -84,112 +84,113 @@ export default function TransportationModule() {
   const coaches = useMemo(() => Array.from(new Set(players.map(p => p.coach || 'Unassigned'))).filter(Boolean).sort(), [players]);
   const timings = useMemo(() => Array.from(new Set(players.map(p => p.classTiming?.trim()))).filter(Boolean).sort(), [players]);
 
-  // Main Filter Logic
-  // 📊 DATA AGGREGATION & FILTERING ENGINE
-  const aggregatedPlayers = useMemo(() => {
-    const playerMap = {};
+  // 📊 DATA INTELLIGENCE ENGINE (Phase 2: Instance-Based)
+  const transportData = useMemo(() => {
+    const instances = [];
+    const distMap = {}; // Distribution for Donut
+    const loadMap = {}; // Timing load for Bar
+    const trendMap = {}; // Daily trend for Line
+    const peakMap = {}; // For Peak Load detection
     
-    // Sort logs by date to ensure chronological history
+    // Sort logs by date correctly
     const sortedLogs = [...logs].sort((a,b) => (a.date || '').localeCompare(b.date || ''));
 
     sortedLogs.forEach(log => {
-      // Check if log falls within range
       if (!log.date || log.date < startDate || log.date > endDate) return;
       if (!log.attendance || !Array.isArray(log.attendance)) return;
 
       log.attendance.forEach(record => {
-        const pId = record.id;
-        if (!pId) return;
+        // 🚫 STRICT FILTER: Only present players with transport assigned
+        const isPresent = record.status === 'present';
+        const hasTransport = record.transportation && record.transportation !== 'None' && record.transportation !== 'Own Transportation';
         
-        if (!playerMap[pId]) {
-          // Find master info from players_v2
-          const master = players.find(p => p.id === pId) || {};
-          playerMap[pId] = {
-            id: pId,
-            name: record.name,
-            sport: master.sports?.join(', ') || master.sport || 'N/A',
-            coach: master.coach || 'N/A',
-            timing: master.classTiming || 'N/A',
-            attendedDays: 0,
-            totalDays: 0,
-            transportCountMap: {}, // To track frequency of different transport types
-            history: []
-          };
-        }
+        if (!isPresent) return; // Skip absent players entirely
 
-        const pData = playerMap[pId];
-        pData.totalDays++;
-        if (record.status === 'present') pData.attendedDays++;
-        
-        // Track transport frequency
-        const tType = record.transportation || 'None';
-        if (tType && tType !== 'None') {
-          pData.transportCountMap[tType] = (pData.transportCountMap[tType] || 0) + (record.status === 'present' ? 1 : 0);
-        }
+        const master = players.find(p => p.id === record.id) || {};
+        const timing = master.classTiming || log.timing || 'N/A';
+        const sport = master.sports?.join(', ') || master.sport || log.sport || 'N/A';
+        const transport = record.transportation || 'N/A';
 
-        pData.history.push({
+        // Add to main table data
+        instances.push({
+          id: record.id,
+          name: record.name,
+          sport,
+          timing,
           date: log.date,
-          status: record.status,
-          transport: record.transportation
+          transport
         });
+
+        // Skip metrics for "Own Transport" if filtering strictly for FMAC Usage
+        // (Though the user said "exclude empty/irrelevant", usually "Own" is excluded)
+        if (transport === 'Own Transportation' || transport === 'N/A') return;
+
+        // Analytics Processing
+        distMap[transport] = (distMap[transport] || 0) + 1;
+        loadMap[timing] = (loadMap[timing] || 0) + 1;
+        trendMap[log.date] = (trendMap[log.date] || 0) + 1;
+        
+        const peakKey = `${log.date} @ ${timing}`;
+        peakMap[peakKey] = (peakMap[peakKey] || 0) + 1;
       });
     });
 
-    // Final calculations & filtering
-    return Object.values(playerMap).map(p => {
-      // Determine "Main Transport" (most used)
-      const topTransport = Object.entries(p.transportCountMap)
-        .sort((a,b) => b[1] - a[1])[0];
-        
-      const transportSummary = topTransport 
-        ? `${topTransport[0]} (${topTransport[1]} days)` 
-        : "N/A";
+    // Determine Peak Load
+    const peakEntry = Object.entries(peakMap).sort((a,b) => b[1] - a[1])[0];
+    const peakLoad = peakEntry ? { label: peakEntry[0], count: peakEntry[1] } : null;
 
-      return {
-        ...p,
-        attendanceRate: p.totalDays > 0 ? Math.round((p.attendedDays / p.totalDays) * 100) : 0,
-        transportSummary
-      };
-    }).filter(p => {
-       const matchesSport = filterSport === 'All' || p.sport.includes(filterSport);
-       const matchesCoach = filterCoach === 'All' || p.coach === filterCoach;
-       const matchesTiming = filterTiming === 'All' || p.timing === filterTiming;
-       
-       let matchesAttendance = true;
-       if (filterAttendance === 'attended') matchesAttendance = p.attendedDays > 0;
-       if (filterAttendance === 'absent_only') matchesAttendance = p.attendedDays === 0;
-
-       let matchesTransport = true;
-       if (filterTransport === 'Yes') matchesTransport = p.transportSummary !== 'N/A';
-       if (filterTransport === 'No') matchesTransport = p.transportSummary === 'N/A';
-
-       return matchesSport && matchesCoach && matchesTiming && matchesAttendance && matchesTransport;
+    // Filter instances based on UI filters
+    const filteredInstances = instances.filter(inst => {
+      const matchesSport = filterSport === 'All' || inst.sport.includes(filterSport);
+      const matchesTiming = filterTiming === 'All' || inst.timing === filterTiming;
+      const matchesTransport = filterTransport === 'All' || inst.transport === filterTransport;
+      return matchesSport && matchesTiming && matchesTransport;
     });
-  }, [logs, players, startDate, endDate, filterSport, filterCoach, filterTiming, filterTransport]);
+
+    return {
+      instances: filteredInstances,
+      dist: distMap,
+      load: loadMap,
+      trend: trendMap,
+      peak: peakLoad
+    };
+  }, [logs, players, startDate, endDate, filterSport, filterTiming, filterTransport]);
+
+  // Extract unique transport methods for filtering
+  const transportMethods = useMemo(() => {
+    const methods = new Set();
+    logs.forEach(log => log.attendance?.forEach(r => {
+      if (r.transportation && r.transportation !== 'None') methods.add(r.transportation);
+    }));
+    return Array.from(methods).sort();
+  }, [logs]);
 
   // Metrics Extraction
   const stats = useMemo(() => {
-    const total = aggregatedPlayers.length;
-    const avgAttendance = total > 0 
-      ? Math.round(aggregatedPlayers.reduce((acc, p) => acc + p.attendanceRate, 0) / total) 
-      : 0;
-    const transportUsers = aggregatedPlayers.filter(p => p.transportSummary !== 'N/A').length;
-    return { total, avgAttendance, transportUsers };
-  }, [aggregatedPlayers]);
+    const totalPresent = transportData.instances.length;
+    const transportUsers = transportData.instances.filter(i => i.transport !== 'Own Transportation' && i.transport !== 'N/A').length;
+    const utilization = totalPresent > 0 ? Math.round((transportUsers / totalPresent) * 100) : 0;
+    
+    // Summary of transport methods
+    const methodSummary = Object.entries(transportData.dist)
+      .sort((a,b) => b[1] - a[1])
+      .map(([method, count]) => ({ method, count }));
+
+    return { totalPresent, transportUsers, utilization, methodSummary, peak: transportData.peak };
+  }, [transportData]);
 
   const handleExport = (type) => {
-    const exportFormat = aggregatedPlayers.map(p => ({
-      "Player Name": p.name,
-      "Sport": p.sport,
-      "Class Timing": p.timing,
-      "Coach": p.coach,
-      "Days Attended": `${p.attendedDays} / ${p.totalDays}`,
-      "Attendance %": `${p.attendanceRate}%`,
-      "Transport Usage": p.transportSummary
+    const exportFormat = transportData.instances.map(inst => ({
+      "Player ID": inst.id,
+      "Player Name": inst.name,
+      "Sport": inst.sport,
+      "Class Timing": inst.timing,
+      "Date": inst.date,
+      "Transportation Method": inst.transport
     }));
 
-    if (type === 'excel') exportToExcel(exportFormat, `FMAC_Transport_Aggregated_${startDate}_to_${endDate}`);
-    if (type === 'csv') exportToCSV(exportFormat, `FMAC_Transport_Aggregated_${startDate}_to_${endDate}`);
+    if (type === 'excel') exportToExcel(exportFormat, `FMAC_Transport_Log_${startDate}_to_${endDate}`);
+    if (type === 'csv') exportToCSV(exportFormat, `FMAC_Transport_Log_${startDate}_to_${endDate}`);
     if (type === 'pdf') printToPDF();
   };
 
@@ -197,7 +198,7 @@ export default function TransportationModule() {
     return (
       <div className="jumping-logo-container animate-fade-in" style={{ height: '70vh' }}>
         <img src="/fmac-logo-new.png" alt="Loading" className="jumping-logo" />
-        <span className="jumping-text">Analyzing History...</span>
+        <span className="jumping-text">Calculating Demand...</span>
       </div>
     );
   }
@@ -205,16 +206,25 @@ export default function TransportationModule() {
   return (
     <div className="tm-container animate-fade-in">
       
-      {/* Header Area */}
-      <div className="tm-header-row">
+      {/* 📄 PRINT ONLY HEADER (Structured Report) */}
+      <div className="tm-print-header">
+        <h1 className="report-title">FMAC Transportation Intelligence Report</h1>
+        <div className="report-meta">
+          <span>Period: {startDate} to {endDate}</span>
+          <span>Generated: {new Date().toLocaleString()}</span>
+        </div>
+      </div>
+
+      {/* Header Area (UI) */}
+      <div className="tm-header-row no-print">
         <div>
-          <h2 className="tm-title">Transportation Intelligence</h2>
-          <p className="tm-subtitle">Historical usage & attendance aggregation</p>
+          <h2 className="tm-title">Transport Demand & Log</h2>
+          <p className="tm-subtitle">Actual usage by present players (excludes absences)</p>
         </div>
         <div className="tm-export-bar">
           <button className="tm-btn" onClick={() => handleExport('csv')}>Export CSV</button>
           <button className="tm-btn" onClick={() => handleExport('excel')}>Export Excel</button>
-          <button className="tm-btn primary" onClick={() => handleExport('pdf')}>Print PDF</button>
+          <button className="tm-btn primary" onClick={() => handleExport('pdf')}>Print Report</button>
           <button 
             className="tm-btn danger" 
             onClick={() => setResetModalOpen(true)}
@@ -226,8 +236,8 @@ export default function TransportationModule() {
         </div>
       </div>
 
-      {/* Date & Filters Layer */}
-      <div className="tm-controls-card glass-panel">
+      {/* Date & Filters Layer (UI) */}
+      <div className="tm-controls-card glass-panel no-print">
         <div className="tm-date-range">
           <div className="date-input-group">
             <label>From</label>
@@ -248,113 +258,148 @@ export default function TransportationModule() {
             <option value="All">All Sports</option>
             {sports.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-          <select value={filterAttendance} onChange={(e) => setFilterAttendance(e.target.value)}>
-            <option value="All">All Attendance</option>
-            <option value="attended">Has Presence</option>
-            <option value="absent_only">No Presence (Absent Only)</option>
-          </select>
           <select value={filterTransport} onChange={(e) => setFilterTransport(e.target.value)}>
-            <option value="All">All Transport Status</option>
-            <option value="Yes">Using Transport</option>
-            <option value="No">No Transport</option>
+            <option value="All">All Transport Methods</option>
+            {transportMethods.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
         </div>
       </div>
 
-      {/* Summary Stats Grid */}
+      {/* Summary Stats Grid (Report Friendly) */}
       <div className="tm-bento-grid">
         <div className="tm-metric-card">
-          <span className="tm-metric-label">Total Players</span>
-          <span className="tm-metric-value">{stats.total}</span>
+          <span className="tm-metric-label">Total Present Players</span>
+          <span className="tm-metric-value">{stats.totalPresent}</span>
         </div>
         <div className="tm-metric-card">
-          <span className="tm-metric-label">Transport Users</span>
+          <span className="tm-metric-label">Active Transport Users</span>
           <span className="tm-metric-value accent">{stats.transportUsers}</span>
         </div>
         <div className="tm-metric-card">
-          <span className="tm-metric-label">Avg Attendance</span>
+          <span className="tm-metric-label">Peak Usage</span>
+          <div className="p-peak-info">
+            <span className="p-peak-lbl">{stats.peak?.label || 'N/A'}</span>
+            <span className="p-peak-val">{stats.peak?.count || 0} users</span>
+          </div>
+        </div>
+        <div className="tm-metric-card">
+          <span className="tm-metric-label">Utilization Rate</span>
           <div className="tm-stat-with-bar">
-            <span className="tm-metric-value">{stats.avgAttendance}%</span>
+            <span className="tm-metric-value">{stats.utilization}%</span>
             <div className="mini-progress-track">
-              <div className="mini-progress-fill" style={{ width: `${stats.avgAttendance}%` }}></div>
+              <div className="mini-progress-fill" style={{ width: `${stats.utilization}%` }}></div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* AGGREGATED TABLE */}
+      {/* 📊 ANALYTICS MATRIX */}
+      <div className="tm-analytics-shelf">
+        
+        {/* Daily Trend Load (Line Chart) */}
+        <div className="tm-chart-card line-card">
+          <h3 className="tm-chart-title">Daily Transport Demand</h3>
+          <div className="tm-line-chart">
+            <svg width="100%" height="150" viewBox="0 0 500 150" preserveAspectRatio="none">
+              {/* Grid Lines */}
+              <line x1="0" y1="125" x2="500" y2="125" stroke="#EEE" strokeWidth="1" />
+              <line x1="0" y1="75" x2="500" y2="75" stroke="#EEE" strokeDasharray="4 4" />
+              <line x1="0" y1="25" x2="500" y2="25" stroke="#EEE" strokeDasharray="4 4" />
+              
+              {/* Line Generation */}
+              {(() => {
+                const dates = Object.keys(transportData.trend).sort();
+                if (dates.length < 2) return null;
+                const maxVal = Math.max(...Object.values(transportData.trend), 1);
+                const points = dates.map((d, i) => {
+                  const x = (i / (dates.length - 1)) * 500;
+                  const y = 125 - (transportData.trend[d] / maxVal) * 100;
+                  return `${x},${y}`;
+                }).join(' ');
+                
+                return (
+                  <>
+                    <path d={`M ${points.split(' ')[0]} L ${points}`} fill="none" stroke="var(--accent-color)" strokeWidth="3" strokeLinecap="round" />
+                    {dates.map((d, i) => {
+                      const x = (i / (dates.length - 1)) * 500;
+                      const y = 125 - (transportData.trend[d] / maxVal) * 100;
+                      return <circle key={i} cx={x} cy={y} r="4" fill="white" stroke="var(--accent-color)" strokeWidth="2" />;
+                    })}
+                  </>
+                );
+              })()}
+            </svg>
+            <div className="tm-line-labels">
+               <span>{startDate}</span>
+               <span>{endDate}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Load per time slot (Bar Chart) */}
+        <div className="tm-chart-card">
+          <h3 className="tm-chart-title">Load per Time Slot</h3>
+          <div className="tm-simple-bar-list">
+             {Object.entries(transportData.load).sort((a,b) => b[1]-a[1]).map(([time, count]) => (
+               <div key={time} className="tm-bar-item">
+                 <div className="bar-info">
+                   <span className="bar-lbl">{time}</span>
+                   <span className="bar-val">{count} users</span>
+                 </div>
+                 <div className="bar-track">
+                   <div className="bar-fill" style={{ width: `${(count/Math.max(...Object.values(transportData.load),1))*100}%` }}></div>
+                 </div>
+               </div>
+             ))}
+          </div>
+        </div>
+
+        {/* Transport Breakdown (Method View) */}
+        <div className="tm-chart-card print-full">
+          <h3 className="tm-chart-title">Transport Methods Breakown</h3>
+          <div className="tm-method-grid">
+            {stats.methodSummary.map(m => (
+              <div key={m.method} className="method-pill">
+                <span className="m-name">{m.method}</span>
+                <span className="m-count">{m.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* DETAILED TABLE */}
       <div className="tm-table-card glass-panel">
         <table className="tm-agg-table">
           <thead>
             <tr>
-              <th width="40"></th>
+              <th>Player ID</th>
               <th>Player Name</th>
-              <th>Sport / Timing</th>
-              <th>Coach</th>
-              <th>Days Attended</th>
-              <th>Transport Usage</th>
-              <th width="150">Attendance %</th>
+              <th>Sport</th>
+              <th>Class Timing</th>
+              <th>Date</th>
+              <th>Transportation Used</th>
             </tr>
           </thead>
           <tbody>
-            {aggregatedPlayers.length > 0 ? (
-              aggregatedPlayers.map(player => (
-                <React.Fragment key={player.id}>
-                  <tr className={`tm-row ${expandedPlayerId === player.id ? 'active' : ''}`} onClick={() => setExpandedPlayerId(expandedPlayerId === player.id ? null : player.id)}>
-                    <td className="expand-cell">
-                      <svg className={`chevron ${expandedPlayerId === player.id ? 'rotated' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </td>
-                    <td>
-                      <div className="p-name-main">{player.name}</div>
-                      <div className="p-id-sub">ID: #{player.id}</div>
-                    </td>
-                    <td>
-                      <div className="p-sport-tag">{player.sport}</div>
-                      <div className="p-timing-sub">{player.timing}</div>
-                    </td>
-                    <td className="p-coach-cell">{player.coach}</td>
-                    <td className="p-days-cell">
-                      <span className="days-val">{player.attendedDays}</span>
-                      <span className="days-total">/ {player.totalDays}</span>
-                    </td>
-                    <td>
-                      <span className={`tm-transport-pill ${player.transportSummary !== 'N/A' ? 'active' : ''}`}>
-                        {player.transportSummary}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="tm-rate-wrapper">
-                        <div className="tm-rate-bar-bg">
-                          <div className={`tm-rate-bar-fill ${player.attendanceRate >= 80 ? 'good' : player.attendanceRate >= 50 ? 'avg' : 'poor'}`} style={{ width: `${player.attendanceRate}%` }}></div>
-                        </div>
-                        <span className="tm-rate-text">{player.attendanceRate}%</span>
-                      </div>
-                    </td>
-                  </tr>
-                  
-                  {expandedPlayerId === player.id && (
-                    <tr className="tm-detail-row">
-                      <td colSpan="7">
-                        <div className="tm-detail-container animate-slide-down">
-                          <h4 className="detail-title">Daily Breakdown</h4>
-                          <div className="detail-grid">
-                            {player.history.map((day, idx) => (
-                              <div key={idx} className="detail-card">
-                                <div className="detail-date">{new Date(day.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</div>
-                                <div className={`detail-status ${day.status}`}>{day.status}</div>
-                                <div className="detail-transport">{day.transport || 'No Transport'}</div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
+            {transportData.instances.length > 0 ? (
+              transportData.instances.map((inst, idx) => (
+                <tr key={`${inst.id}-${idx}`} className="tm-row-instance">
+                  <td className="inst-id">#{inst.id}</td>
+                  <td className="inst-name">{inst.name}</td>
+                  <td className="inst-sport">{inst.sport}</td>
+                  <td className="inst-timing">{inst.timing}</td>
+                  <td className="inst-date">{new Date(inst.date).toLocaleDateString('en-GB')}</td>
+                  <td className="inst-method">
+                    <span className={`tm-transport-pill active`}>
+                      {inst.transport}
+                    </span>
+                  </td>
+                </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="7" className="tm-empty">No data found for this range. Try adjusting the dates.</td>
+                <td colSpan="6" className="tm-empty">No transport usage found for present players in this range.</td>
               </tr>
             )}
           </tbody>
