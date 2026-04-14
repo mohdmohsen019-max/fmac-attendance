@@ -1,9 +1,12 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { db } from '../firebase';
 import { collection, onSnapshot, query } from 'firebase/firestore';
-import { exportToExcel, exportToCSV, printToPDF } from '../utils/exportEngine';
+import { exportToExcel, exportToCSV } from '../utils/exportEngine';
 import ConfirmModal from './ConfirmModal';
 import { resetTransportationOnly } from '../utils/systemUtils';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
 import './AttendanceTable.css';
 import './TransportationModule.css';
 
@@ -13,6 +16,9 @@ export default function TransportationModule() {
   const [loading, setLoading] = useState(true);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  
+  const pdfRef = useRef(null);
 
   // Date Range Filters
   const [startDate, setStartDate] = useState(() => {
@@ -179,6 +185,43 @@ export default function TransportationModule() {
     return { totalPresent, transportUsers, utilization, methodSummary, peak: transportData.peak };
   }, [transportData]);
 
+  const generateRichPDF = async () => {
+    setIsGeneratingPDF(true);
+    try {
+      const element = pdfRef.current;
+      if (!element) return;
+      
+      // Briefly make it visible to rendering engine
+      element.style.display = 'block';
+      
+      const canvas = await html2canvas(element, { 
+        backgroundColor: '#ffffff',
+        scale: 2, // High resolution
+        useCORS: true
+      });
+      
+      // Hide again
+      element.style.display = 'none';
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      // Support multi-page if content is super long, though usually we just let it scale.
+      // A more robust way is to split it if height exceeds A4, but for now scaling is safest.
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`FMAC_Transport_Analytics_${startDate}_to_${endDate}.pdf`);
+      
+    } catch (e) {
+      console.error(e);
+      alert('Error generating PDF Layout');
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   const handleExport = (type) => {
     const exportFormat = transportData.instances.map(inst => ({
       "Player ID": inst.id,
@@ -191,7 +234,7 @@ export default function TransportationModule() {
 
     if (type === 'excel') exportToExcel(exportFormat, `FMAC_Transport_Log_${startDate}_to_${endDate}`);
     if (type === 'csv') exportToCSV(exportFormat, `FMAC_Transport_Log_${startDate}_to_${endDate}`);
-    if (type === 'pdf') printToPDF();
+    if (type === 'pdf') generateRichPDF();
   };
 
   if (loading) {
@@ -206,186 +249,176 @@ export default function TransportationModule() {
   return (
     <div className="tm-container animate-fade-in">
       
-      {/* 📄 DEDICATED FORMAL PDF REPORT (ONLY VISIBLE ON PRINT) */}
-      <div className="executive-print-report">
-        
+      {/* 🚀 TRUE BACKEND PDF EXPORT ENGINE 🚀 */}
+      <div className="pdf-export-canvas" ref={pdfRef}>
         {/* 1. COVER HEADER */}
-        <div className="epr-header">
-           <div className="epr-header-content">
-             <div className="epr-title-block">
-               <h1 className="epr-h1-title">Transportation Logistics Report</h1>
-               <p className="epr-h1-sub">Period: {startDate} to {endDate}</p>
-             </div>
-             <div className="epr-meta">
-               <div className="epr-logo">FMAC</div>
-               <p>Generated: <br/>{new Date().toLocaleString()}</p>
+        <div className="pdf-c-header">
+           <img src="/fmac-logo-new.png" alt="FMAC" className="pdf-c-logo" />
+           <div className="pdf-c-header-text">
+             <h1 className="pdf-c-title">Transportation Logistics Report</h1>
+             <div className="pdf-c-meta">
+               <span>Period: {startDate} to {endDate}</span>
+               <span>Generated: {new Date().toLocaleString()}</span>
              </div>
            </div>
         </div>
 
-        <div className="epr-body">
-            
-            {/* 2. EXECUTIVE SUMMARY */}
-            <div className="epr-summary-cards">
-              <div className="epr-card">
-                 <div className="epr-card-accent"></div>
-                 <span className="epr-card-label">Total Present Players</span>
-                 <span className="epr-card-value">{stats.totalPresent}</span>
-              </div>
-              <div className="epr-card">
-                 <div className="epr-card-accent"></div>
-                 <span className="epr-card-label">Active Transport Users</span>
-                 <span className="epr-card-value">{stats.transportUsers}</span>
-              </div>
-              <div className="epr-card">
-                 <div className="epr-card-accent"></div>
-                 <span className="epr-card-label">Utilization Rate</span>
-                 <span className="epr-card-value">{stats.utilization}%</span>
-              </div>
-              <div className="epr-card">
-                 <div className="epr-card-accent"></div>
-                 <span className="epr-card-label">Peak Usage Load</span>
-                 <span className="epr-card-value">{stats.peak?.count || 0}</span>
-                 <span className="epr-card-sub">{stats.peak?.label || 'N/A'}</span>
-              </div>
+        {/* 2. EXECUTIVE SUMMARY CARDS */}
+        <div className="pdf-c-section">
+          <h2 className="pdf-c-section-title">Executive Summary</h2>
+          <div className="pdf-c-grid-4">
+            <div className="pdf-c-card">
+              <span className="c-card-lbl">Total Present Players</span>
+              <span className="c-card-val">{stats.totalPresent}</span>
             </div>
+            <div className="pdf-c-card">
+              <span className="c-card-lbl">Active Transport Users</span>
+              <span className="c-card-val cherry">{stats.transportUsers}</span>
+            </div>
+            <div className="pdf-c-card">
+              <span className="c-card-lbl">Utilization %</span>
+              <span className="c-card-val">{stats.utilization}%</span>
+            </div>
+            <div className="pdf-c-card">
+              <span className="c-card-lbl">Peak Load</span>
+              <span className="c-card-val">{stats.peak?.count || 0}</span>
+              <span className="c-card-sub">{stats.peak?.label || 'N/A'}</span>
+            </div>
+          </div>
+        </div>
 
-            {/* 3. VISUAL ANALYTICS */}
-            <h2 className="epr-section-title">Visual Analytics</h2>
-            
-            <div className="epr-analytics-row">
-               {/* A. Daily Trend (Line Chart pseudo-SVG) */}
-               <div className="epr-chart-box epr-line-chart">
-                  <h3 className="epr-chart-title">Daily Transport Trend</h3>
-                  <div className="epr-chart-content">
-                     <svg width="100%" height="150" viewBox="0 0 500 150" preserveAspectRatio="none">
-                       {(() => {
-                          const dates = Object.keys(transportData.trend).sort();
-                          if (dates.length < 2) return null;
-                          const maxVal = Math.max(...Object.values(transportData.trend), 1);
-                          const points = dates.map((d, i) => {
+        {/* 3. VISUAL ANALYTICS */}
+        <div className="pdf-c-section">
+           <h2 className="pdf-c-section-title">Visual Analytics</h2>
+           <div className="pdf-c-charts-grid">
+              
+              {/* Daily Trend Line */}
+              <div className="pdf-c-chart-box full-width">
+                 <h3>Daily Transport Trend</h3>
+                 <div className="pdf-c-line-wrapper">
+                  <svg width="100%" height="150" viewBox="0 0 500 150" preserveAspectRatio="none">
+                    <line x1="0" y1="125" x2="500" y2="125" stroke="#DED2C1" strokeWidth="1" />
+                    <line x1="0" y1="75" x2="500" y2="75" stroke="#DED2C1" strokeDasharray="4 4" />
+                    <line x1="0" y1="25" x2="500" y2="25" stroke="#DED2C1" strokeDasharray="4 4" />
+                    {(() => {
+                      const dates = Object.keys(transportData.trend).sort();
+                      if (dates.length < 2) return null;
+                      const maxVal = Math.max(...Object.values(transportData.trend), 1);
+                      const points = dates.map((d, i) => {
+                        const x = (i / (dates.length - 1)) * 500;
+                        const y = 125 - (transportData.trend[d] / maxVal) * 100;
+                        return `${x},${y}`;
+                      }).join(' ');
+                      return (
+                        <>
+                          <path d={`M ${points.split(' ')[0]} L ${points}`} fill="none" stroke="#C70017" strokeWidth="3" strokeLinecap="round" />
+                          {dates.map((d, i) => {
                             const x = (i / (dates.length - 1)) * 500;
-                            const y = 130 - (transportData.trend[d] / maxVal) * 110;
-                            return `${x},${y}`;
-                          }).join(' ');
-                          
-                          return (
-                            <>
-                              <path d={`M ${points.split(' ')[0]} L ${points}`} fill="none" stroke="#200f07" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-                              {dates.map((d, i) => {
-                                const x = (i / (dates.length - 1)) * 500;
-                                const y = 130 - (transportData.trend[d] / maxVal) * 110;
-                                return <circle key={i} cx={x} cy={y} r="5" fill="#c5e384" stroke="#200f07" strokeWidth="2" />;
-                              })}
-                            </>
-                          );
-                        })()}
-                     </svg>
-                  </div>
-               </div>
+                            const y = 125 - (transportData.trend[d] / maxVal) * 100;
+                            return <circle key={i} cx={x} cy={y} r="4" fill="white" stroke="#C70017" strokeWidth="2" />;
+                          })}
+                        </>
+                      );
+                    })()}
+                  </svg>
+                 </div>
+              </div>
 
-               {/* B. Transport Distribution (SVG Donut Chart) */}
-               <div className="epr-chart-box">
-                  <h3 className="epr-chart-title">Transport Distribution</h3>
-                  <div className="epr-donut-wrapper">
-                    <svg width="100%" height="150" viewBox="0 0 42 42">
-                       <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f0f0f0" strokeWidth="6" />
-                       {(() => {
-                           let cumPct = 0;
-                           const colors = ['#c5e384', '#200f07', '#a0cd47', '#4a2512', '#769435', '#8a5035'];
-                           return stats.methodSummary.map((item, i) => {
-                             const dash = (item.count / Math.max(stats.transportUsers, 1)) * 100;
-                             const bgDash = 100 - dash;
-                             const offset = 25 - cumPct;
-                             cumPct += dash;
-                             if(dash === 0) return null;
-                             return (
-                               <circle key={`donut-${i}`} cx="21" cy="21" r="15.915" fill="transparent"
-                                  stroke={colors[i % colors.length]}
-                                  strokeWidth="6"
-                                  strokeDasharray={`${dash} ${bgDash}`}
-                                  strokeDashoffset={offset}
-                               />
-                             )
-                           });
-                       })()}
-                       <circle cx="21" cy="21" r="12" fill="white" />
-                       <text x="21" y="21" textAnchor="middle" dominantBaseline="middle" fill="#200f07" fontSize="6" fontWeight="bold">
-                         {stats.transportUsers}
-                       </text>
-                    </svg>
-                  </div>
-               </div>
-            </div>
+              {/* Bar Chart */}
+              <div className="pdf-c-chart-box">
+                <h3>Transport Load by Time</h3>
+                <div className="pdf-c-bars">
+                  {Object.entries(transportData.load).sort((a,b) => b[1]-a[1]).map(([time, count], idx) => {
+                    const isPeak = idx === 0;
+                    return (
+                    <div key={time} className="pdf-c-bar-item">
+                      <div className="pdf-c-bar-info">
+                        <span style={{fontWeight: isPeak?700:500}}>{time}</span>
+                        <span style={{color: isPeak?'#C70017':'#333', fontWeight: 700}}>{count} users</span>
+                      </div>
+                      <div className="pdf-c-bar-track">
+                        <div className="pdf-c-bar-fill" style={{ width: `${(count/Math.max(...Object.values(transportData.load),1))*100}%`, background: isPeak ? '#C70017' : '#c5e384' }}></div>
+                      </div>
+                    </div>
+                  )})}
+                </div>
+              </div>
 
-            {/* C. Time Load GRID */}
-            <h2 className="epr-section-title">Peak Demand by Time Slot</h2>
-            <div className="epr-time-grid">
-               {Object.entries(transportData.load).sort((a,b) => b[1]-a[1]).map(([time, count]) => (
-                  <div key={time} className="epr-time-card">
-                     <span className="epr-time-label">{time}</span>
-                     <span className="epr-time-count">{count} users</span>
-                  </div>
-               ))}
-            </div>
-
-            {/* 4. TRANSPORT METHOD BREAKDOWN */}
-            <h2 className="epr-section-title">Transport Method Intelligence</h2>
-            <div className="epr-methods-breakdown-grid">
-               {stats.methodSummary.map(m => {
-                  const percent = Math.round((m.count / Math.max(stats.transportUsers, 1)) * 100);
-                  return (
-                     <div key={`m-bkd-${m.method}`} className="epr-mb-card">
-                        <div className="epr-mb-header">
-                           <span className="epr-mb-title">{m.method}</span>
-                           <span className="epr-mb-count">{m.count} Usr</span>
+              {/* Pseudo Donut (Methods) */}
+              <div className="pdf-c-chart-box">
+                <h3>Transport Distribution</h3>
+                <div className="pdf-c-donut-standin">
+                   {stats.methodSummary.map((m, i) => {
+                     const perc = Math.round((m.count / Math.max(stats.transportUsers, 1)) * 100);
+                     // Generate pistacio variations
+                     const shade = `hsl(79, 60%, ${40 + (i * 10)}%)`; 
+                     return (
+                        <div key={m.method} className="pdf-c-donut-item">
+                           <div className="pd-dot" style={{background: shade}}></div>
+                           <span className="pd-lbl">{m.method}</span>
+                           <span className="pd-val">{perc}%</span>
                         </div>
-                        <ul className="epr-mb-list">
-                           <li>Total Users: <strong>{m.count}</strong></li>
-                           <li>Share of Demand: <strong>{percent}%</strong></li>
-                        </ul>
-                        <div className="epr-mb-track"><div className="epr-mb-fill" style={{width: `${percent}%`}}></div></div>
-                     </div>
-                  )
-               })}
-            </div>
+                     )
+                   })}
+                </div>
+              </div>
 
-            {/* 5. DETAILED LOG */}
-            <h2 className="epr-section-title">Detailed Passenger Ledger</h2>
-            <table className="epr-detailed-table">
-               <thead>
-                 <tr>
-                   <th style={{ width: '12%' }}>Player ID</th>
-                   <th style={{ width: '25%' }}>Player Name</th>
-                   <th style={{ width: '20%' }}>Sport</th>
-                   <th style={{ width: '18%' }}>Class Timing</th>
-                   <th style={{ width: '13%' }}>Date</th>
-                   <th style={{ width: '12%' }}>Transport</th>
-                 </tr>
-               </thead>
-               <tbody>
-                  {transportData.instances.length > 0 ? (
-                    transportData.instances.map((inst, idx) => (
-                      <tr key={`epr-${inst.id}-${idx}`}>
-                        <td className="epr-td-id">#{inst.id}</td>
-                        <td className="epr-td-name">{inst.name}</td>
-                        <td className="epr-td-sport">{inst.sport}</td>
-                        <td>{inst.timing}</td>
-                        <td>{new Date(inst.date).toLocaleDateString('en-GB')}</td>
-                        <td className="epr-td-transport">
-                          <span className="epr-pill">{inst.transport}</span>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No records found for this period.</td>
-                    </tr>
-                  )}
-               </tbody>
-            </table>
+           </div>
+        </div>
+
+        {/* 4. METHOD BREAKDOWN */}
+        <div className="pdf-c-section">
+           <h2 className="pdf-c-section-title">Transport Method Block Breakdown</h2>
+           <div className="pdf-c-methods-grid">
+              {stats.methodSummary.map(m => {
+                 const perc = Math.round((m.count / Math.max(stats.transportUsers, 1)) * 100);
+                 return (
+                 <div key={m.method} className="pdf-c-m-card">
+                   <div className="pdf-m-header">
+                     <h3>{m.method}</h3>
+                     <span className="pdf-m-perc">{perc}%</span>
+                   </div>
+                   <div className="pdf-m-stats">
+                     <span><strong>Total Users:</strong> {m.count}</span>
+                   </div>
+                   <div className="pdf-m-mini-bar-track">
+                      <div className="pdf-m-mini-bar-fill" style={{width: `${perc}%`}}></div>
+                   </div>
+                 </div>
+               )})}
+           </div>
+        </div>
+
+        {/* 5. DETAILED TABLE */}
+        <div className="pdf-c-section">
+          <h2 className="pdf-c-section-title">Detailed Passenger Ledger</h2>
+          <table className="pdf-c-detailed-table">
+            <thead>
+              <tr>
+                <th style={{ width: '15%' }}>Player ID</th>
+                <th style={{ width: '25%' }}>Name</th>
+                <th style={{ width: '15%' }}>Sport</th>
+                <th style={{ width: '15%' }}>Timing</th>
+                <th style={{ width: '15%' }}>Date</th>
+                <th style={{ width: '15%' }}>Transport</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transportData.instances.map((inst, idx) => (
+                <tr key={`log-${idx}`}>
+                  <td>#{inst.id}</td>
+                  <td style={{fontWeight: 700}}>{inst.name}</td>
+                  <td style={{color: '#C70017'}}>{inst.sport}</td>
+                  <td>{inst.timing}</td>
+                  <td>{new Date(inst.date).toLocaleDateString()}</td>
+                  <td>{inst.transport}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
+
 
       {/* Header Area (UI) */}
       <div className="tm-header-row no-print">
@@ -396,7 +429,9 @@ export default function TransportationModule() {
         <div className="tm-export-bar">
           <button className="tm-btn" onClick={() => handleExport('csv')}>Export CSV</button>
           <button className="tm-btn" onClick={() => handleExport('excel')}>Export Excel</button>
-          <button className="tm-btn primary" onClick={() => handleExport('pdf')}>Print Report</button>
+          <button className="tm-btn primary" onClick={() => handleExport('pdf')} disabled={isGeneratingPDF}>
+            {isGeneratingPDF ? "Generating PDF..." : "Export PDF"}
+          </button>
           <button 
             className="tm-btn danger" 
             onClick={() => setResetModalOpen(true)}

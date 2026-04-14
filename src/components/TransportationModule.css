@@ -77,11 +77,6 @@
   margin: 4px 0 0 0;
 }
 
-/* Print Specifics */
-.dedicated-print-report {
-  display: none;
-}
-
 /* Controls */
 .tm-controls-card {
   display: flex;
@@ -354,303 +349,294 @@
   color: var(--accent-color);
 }
 
-/* Printing logic */
-@media print {
-  @page { margin: 0; size: auto; } /* Full bleed for header */
+/* ==============================================================
+   TRUE BACKEND PDF CANVAS ENGINE (HIDDEN FROM UI)
+   ============================================================== */
+.pdf-export-canvas {
+  /* Used only by html2canvas; JS sets its display briefly to block */
+  display: none;
+  background: white;
+  width: 794px; /* Exact A4 Width at 96 DPI */
+  padding-bottom: 40px;
+  font-family: inherit;
+  color: #333;
+}
 
-  body {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-  
-  body * { visibility: hidden; }
-  
-  .tm-container, .tm-container * { visibility: none; }
-  
-  .executive-print-report { 
-    display: block !important; 
-    visibility: visible !important;
-    position: absolute; 
-    left: 0; 
-    top: 0; 
-    width: 100%; 
-    padding: 0;
-    color: #200f07 !important;
-    background: white;
-  }
-  
-  .executive-print-report * {
-    visibility: visible !important;
-  }
-  
-  .no-print { display: none !important; }
+/* 1. COVER HEADER */
+.pdf-c-header {
+  background: #200f07; /* Midnight Espresso */
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 30px;
+  gap: 20px;
+}
 
-  /* 1. COVER HEADER */
-  .epr-header {
-    background-color: #200f07 !important;
-    color: white !important;
-    padding: 30px 40px;
-    margin-bottom: 30px;
-  }
-  
-  .epr-header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+.pdf-c-logo {
+  height: 60px;
+  filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));
+}
 
-  .epr-logo {
-    font-size: 24pt;
-    font-weight: 900;
-    color: #c5e384 !important;
-    letter-spacing: 2px;
-  }
+.pdf-c-header-text {
+  flex-grow: 1;
+}
 
-  .epr-h1-title {
-    font-size: 20pt;
-    margin: 0 0 5px 0;
-    font-weight: 700;
-    color: white !important;
-  }
-  
-  .epr-h1-sub {
-    font-size: 11pt;
-    margin: 0;
-    color: #c5e384 !important;
-  }
+.pdf-c-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
-  .epr-meta {
-    text-align: right;
-    font-size: 9pt;
-    color: #DDD !important;
-  }
+.pdf-c-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-size: 11px;
+  color: #DED2C1; /* Soft Greige */
+  font-weight: 500;
+}
 
-  /* BODY WRAPPER */
-  .epr-body {
-    padding: 0 40px 40px 40px;
-  }
+/* 2. EXECUTIVE SUMMARY CARDS */
+.pdf-c-section {
+  padding: 0 30px;
+  margin-top: 30px;
+}
 
-  /* 2. EXECUTIVE SUMMARY CARDS */
-  .epr-summary-cards {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 30px;
-  }
+.pdf-c-section-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #200f07;
+  border-bottom: 2px solid #DED2C1;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
 
-  .epr-card {
-    flex: 1;
-    background: #fdfdfd !important;
-    border: 1px solid #E5E5E5 !important;
-    border-radius: 12px;
-    padding: 20px;
-    position: relative;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
-    display: flex;
-    flex-direction: column;
-  }
+.pdf-c-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
 
-  .epr-card-accent {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 6px;
-    background-color: #c5e384 !important;
-    border-radius: 12px 0 0 12px;
-  }
+.pdf-c-card {
+  background: #FFF;
+  border: 1px solid #EEE;
+  border-left: 5px solid #c5e384; /* Pistachio Frost */
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+}
 
-  .epr-card-label {
-    font-size: 9pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: #666 !important;
-    margin-bottom: 8px;
-    padding-left: 8px;
-  }
+.c-card-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+}
 
-  .epr-card-value {
-    font-size: 24pt;
-    font-weight: 900;
-    color: #200f07 !important;
-    padding-left: 8px;
-  }
+.c-card-val {
+  font-size: 26px;
+  font-weight: 900;
+  color: #200f07;
+  margin-top: 4px;
+}
 
-  .epr-card-sub {
-    font-size: 9pt;
-    color: #200f07 !important;
-    padding-left: 8px;
-    margin-top: 4px;
-    opacity: 0.8;
-  }
+.c-card-val.cherry {
+  color: #C70017;
+}
 
-  /* SECTION TITLES */
-  .epr-section-title {
-    font-size: 14pt;
-    font-weight: 800;
-    color: #200f07 !important;
-    margin: 30px 0 15px 0;
-    border-bottom: 2px solid #E5E5E5 !important;
-    padding-bottom: 8px;
-  }
+.c-card-sub {
+  font-size: 10px;
+  color: #888;
+}
 
-  /* 3. VISUAL ANALYTICS */
-  .epr-analytics-row {
-    display: flex;
-    gap: 24px;
-    margin-bottom: 20px;
-  }
+/* 3. VISUAL ANALYTICS */
+.pdf-c-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
 
-  .epr-chart-box {
-    flex: 1;
-    background: #fcfcfc !important;
-    border: 1px solid #EEE !important;
-    border-radius: 16px;
-    padding: 20px;
-  }
+.pdf-c-chart-box {
+  background: #FAFAFA;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #EEE;
+}
 
-  .epr-line-chart {
-    flex: 1.5; /* larger */
-  }
+.pdf-c-chart-box.full-width {
+  grid-column: span 2;
+}
 
-  .epr-chart-title {
-    font-size: 11pt;
-    font-weight: 700;
-    margin-bottom: 16px;
-    color: #200f07 !important;
-  }
+.pdf-c-chart-box h3 {
+  font-size: 12px;
+  font-weight: 800;
+  color: #200f07;
+  margin: 0 0 10px 0;
+}
 
-  .epr-donut-wrapper {
-    display: flex;
-    justify-content: center;
-  }
+/* Line wrapper */
+.pdf-c-line-wrapper {
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #EEE;
+}
 
-  /* Peak Time Grid */
-  .epr-time-grid {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 30px;
-  }
+/* Bar Chart */
+.pdf-c-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-  .epr-time-card {
-    background: #f8faf7 !important;
-    color: #200f07 !important;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: 700;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 120px;
-    border: 1px solid #c5e384 !important;
-    border-left: 6px solid #c5e384 !important;
-  }
+.pdf-c-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-  .epr-time-label { font-size: 8.5pt; text-transform: uppercase; color: #666 !important; }
-  .epr-time-count { font-size: 14pt; font-weight: 900; }
+.pdf-c-bar-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
 
-  /* 4. TRANSPORT METHOD BREAKDOWN (Cards with bars) */
-  .epr-methods-breakdown-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 30px;
-  }
+.pdf-c-bar-track {
+  height: 8px;
+  background: #EEE;
+  border-radius: 4px;
+  overflow: hidden;
+}
 
-  .epr-mb-card {
-    background: white !important;
-    border: 1px solid #EEEEEE !important;
-    padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02) !important;
-  }
+.pdf-c-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
 
-  .epr-mb-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-  }
+/* Donut Stand-in */
+.pdf-c-donut-standin {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
-  .epr-mb-title {
-    font-size: 11pt;
-    font-weight: 800;
-    color: #200f07 !important;
-  }
+.pdf-c-donut-item {
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  gap: 8px;
+}
 
-  .epr-mb-count {
-    font-size: 9pt;
-    font-weight: 700;
-    color: #c5e384 !important;
-    background: #200f07 !important;
-    padding: 2px 8px;
-    border-radius: 12px;
-  }
+.pd-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
 
-  .epr-mb-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 12px 0;
-    font-size: 9pt;
-    color: #555 !important;
-    line-height: 1.5;
-  }
+.pd-lbl {
+  flex-grow: 1;
+  color: #200f07;
+}
 
-  .epr-mb-track {
-    height: 6px;
-    background: #EEE !important;
-    border-radius: 4px;
-    overflow: hidden;
-  }
+.pd-val {
+  color: #C70017;
+}
 
-  .epr-mb-fill {
-    height: 100%;
-    background: #c5e384 !important;
-    border-radius: 4px;
-  }
+/* 4. METHOD BREAKDOWN TICKETS */
+.pdf-c-methods-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
 
-  /* 5. DETAILED LOG TABLE */
-  .epr-detailed-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    border: 1px solid #EEE !important;
-    border-radius: 12px;
-    overflow: hidden;
-  }
+.pdf-c-m-card {
+  background: white;
+  border: 1px solid #EFEFEF;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
 
-  .epr-detailed-table th {
-    background: #f8faf7 !important;
-    color: #200f07 !important;
-    padding: 12px 16px;
-    font-size: 9pt;
-    font-weight: 800;
-    text-transform: uppercase;
-    text-align: left;
-    border-bottom: 2px solid #E5E5E5 !important;
-  }
+.pdf-m-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
 
-  .epr-detailed-table td {
-    padding: 12px 16px;
-    font-size: 9.5pt;
-    border-bottom: 1px solid #EEE !important;
-  }
+.pdf-m-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #200f07;
+}
 
-  .epr-detailed-table tr:nth-child(even) td {
-    background: #fcfcfc !important;
-  }
+.pdf-m-perc {
+  font-size: 12px;
+  font-weight: 800;
+  color: #c5e384;
+  background: #200f07;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
 
-  .epr-td-id { color: #666 !important; font-family: monospace; }
-  .epr-td-name { font-weight: 700; color: #200f07 !important; }
-  .epr-td-sport { color: #555 !important; }
-  
-  .epr-pill { 
-    font-weight: 700; 
-    color: #200f07 !important; 
-    background: #c5e384 !important; 
-    border-radius: 12px; 
-    padding: 4px 10px; 
-    display: inline-block; 
-    font-size: 8pt;
+.pdf-m-stats {
+  font-size: 11px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.pdf-m-mini-bar-track {
+  height: 4px;
+  background: #EEE;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pdf-m-mini-bar-fill {
+  height: 100%;
+  background: #c5e384;
+}
+
+/* 5. DETAILED TABLE */
+.pdf-c-detailed-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.pdf-c-detailed-table th {
+  background: #f8faf7;
+  color: #200f07;
+  padding: 12px 10px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-top: 1px solid #DED2C1;
+  border-bottom: 2px solid #DED2C1;
+}
+
+.pdf-c-detailed-table td {
+  padding: 10px;
+  font-size: 11px;
+  color: #333;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.pdf-c-detailed-table tr:nth-child(even) td {
+  background: #FCFCFC;
+}
+
+@media (max-width: 1100px) {
+  .tm-analytics-shelf {
+    grid-template-columns: 1fr;
   }
 }
