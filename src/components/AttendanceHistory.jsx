@@ -66,7 +66,7 @@ export default function AttendanceHistory() {
             disabled={isResetting}
             title="Clear all logs"
           >
-            {isResetting ? "..." : "🗑️"}
+            {isResetting ? "..." : "Reset"}
           </button>
         </div>
         <div className="logs-list">
