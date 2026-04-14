@@ -268,18 +268,30 @@ export default function TransportationModule() {
           <h2 className="pdf-c-section-title">Executive Summary</h2>
           <div className="pdf-c-grid-4">
             <div className="pdf-c-card">
+              <div className="c-card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#200f07" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              </div>
               <span className="c-card-lbl">Total Present Players</span>
               <span className="c-card-val">{stats.totalPresent}</span>
             </div>
             <div className="pdf-c-card">
+              <div className="c-card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C70017" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 17h2l.64-2.54c.24-.95.36-1.92.36-2.9V9a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2.56c0 .98.12 1.95.36 2.9L4 17h2"></path><path d="M7 11V7"></path><path d="M17 11V7"></path><rect x="6" y="17" width="12" height="3" rx="1"></rect><circle cx="8" cy="18" r=".5"></circle><circle cx="16" cy="18" r=".5"></circle></svg>
+              </div>
               <span className="c-card-lbl">Active Transport Users</span>
               <span className="c-card-val cherry">{stats.transportUsers}</span>
             </div>
             <div className="pdf-c-card">
+              <div className="c-card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#200f07" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+              </div>
               <span className="c-card-lbl">Utilization %</span>
               <span className="c-card-val">{stats.utilization}%</span>
             </div>
             <div className="pdf-c-card">
+              <div className="c-card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#200f07" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+              </div>
               <span className="c-card-lbl">Peak Load</span>
               <span className="c-card-val">{stats.peak?.count || 0}</span>
               <span className="c-card-sub">{stats.peak?.label || 'N/A'}</span>
@@ -292,37 +304,6 @@ export default function TransportationModule() {
            <h2 className="pdf-c-section-title">Visual Analytics</h2>
            <div className="pdf-c-charts-grid">
               
-              {/* Daily Trend Line */}
-              <div className="pdf-c-chart-box full-width">
-                 <h3>Daily Transport Trend</h3>
-                 <div className="pdf-c-line-wrapper">
-                  <svg width="100%" height="150" viewBox="0 0 500 150" preserveAspectRatio="none">
-                    <line x1="0" y1="125" x2="500" y2="125" stroke="#DED2C1" strokeWidth="1" />
-                    <line x1="0" y1="75" x2="500" y2="75" stroke="#DED2C1" strokeDasharray="4 4" />
-                    <line x1="0" y1="25" x2="500" y2="25" stroke="#DED2C1" strokeDasharray="4 4" />
-                    {(() => {
-                      const dates = Object.keys(transportData.trend).sort();
-                      if (dates.length < 2) return null;
-                      const maxVal = Math.max(...Object.values(transportData.trend), 1);
-                      const points = dates.map((d, i) => {
-                        const x = (i / (dates.length - 1)) * 500;
-                        const y = 125 - (transportData.trend[d] / maxVal) * 100;
-                        return `${x},${y}`;
-                      }).join(' ');
-                      return (
-                        <>
-                          <path d={`M ${points.split(' ')[0]} L ${points}`} fill="none" stroke="#C70017" strokeWidth="3" strokeLinecap="round" />
-                          {dates.map((d, i) => {
-                            const x = (i / (dates.length - 1)) * 500;
-                            const y = 125 - (transportData.trend[d] / maxVal) * 100;
-                            return <circle key={i} cx={x} cy={y} r="4" fill="white" stroke="#C70017" strokeWidth="2" />;
-                          })}
-                        </>
-                      );
-                    })()}
-                  </svg>
-                 </div>
-              </div>
 
               {/* Bar Chart */}
               <div className="pdf-c-chart-box">
@@ -389,34 +370,6 @@ export default function TransportationModule() {
            </div>
         </div>
 
-        {/* 5. DETAILED TABLE */}
-        <div className="pdf-c-section">
-          <h2 className="pdf-c-section-title">Detailed Passenger Ledger</h2>
-          <table className="pdf-c-detailed-table">
-            <thead>
-              <tr>
-                <th style={{ width: '15%' }}>Player ID</th>
-                <th style={{ width: '25%' }}>Name</th>
-                <th style={{ width: '15%' }}>Sport</th>
-                <th style={{ width: '15%' }}>Timing</th>
-                <th style={{ width: '15%' }}>Date</th>
-                <th style={{ width: '15%' }}>Transport</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transportData.instances.map((inst, idx) => (
-                <tr key={`log-${idx}`}>
-                  <td>#{inst.id}</td>
-                  <td style={{fontWeight: 700}}>{inst.name}</td>
-                  <td style={{color: '#C70017'}}>{inst.sport}</td>
-                  <td>{inst.timing}</td>
-                  <td>{new Date(inst.date).toLocaleDateString()}</td>
-                  <td>{inst.transport}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
 
 
