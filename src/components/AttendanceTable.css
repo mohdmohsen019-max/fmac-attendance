@@ -321,6 +321,8 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* Softer shadow */
   transition: transform var(--dur-med) var(--ease-spring), box-shadow var(--dur-fast);
   will-change: transform;
+  min-height: 85px; /* Ensures all cards look uniform even with 1-line names */
+  justify-content: center;
 }
 
 .player-card:active {
@@ -332,21 +334,42 @@
 }
 
 .player-card-top {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 110px 24px; /* Strict Column Layout: Name | Button | Chevron */
   align-items: center;
   gap: 12px;
   cursor: pointer; /* Tap to expand */
-  position: relative;
-  padding-right: 8px;
+  width: 100%;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0; /* Prevents overflow */
+}
+
+.name-id {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.player-name {
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  line-height: 1.3;
+  /* Allow 2 lines max or keep wrapping but grid handles it */
 }
 
 .card-chevron {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
   transition: transform var(--dur-fast) var(--ease-spring);
   opacity: 0.5;
-  margin-left: auto;
+  justify-self: center;
 }
 
 .card-chevron.rotated {
@@ -437,7 +460,6 @@
 
 @media (max-width: 480px) {
   .player-card-top {
-    flex-direction: row;
     align-items: center; /* keep aligned even if name wraps */
   }
 }
