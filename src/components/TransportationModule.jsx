@@ -9,9 +9,21 @@ import './TransportationModule.css';
 
 export default function TransportationModule() {
   const [players, setPlayers] = useState([]);
+  const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+
+  // Date Range Filters
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    return d.toISOString().split('T')[0];
+  });
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+  
+  // Table expansion state
+  const [expandedPlayerId, setExpandedPlayerId] = useState(null);
 
   const handleReset = async () => {
     setIsResetting(true);
@@ -34,19 +46,36 @@ export default function TransportationModule() {
   const [expandedGroups, setExpandedGroups] = useState({});
 
   useEffect(() => {
-    const q = query(collection(db, "players_v2"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const playersList = querySnapshot.docs.map(doc => ({
+    setLoading(true);
+    
+    // 1. Fetch Master Players List (v2)
+    const qPlayers = query(collection(db, "players_v2"));
+    const unsubPlayers = onSnapshot(qPlayers, (snapshot) => {
+      const pList = snapshot.docs.map(doc => ({
         firestoreId: doc.id,
         ...doc.data()
       }));
-      setPlayers(playersList);
+      setPlayers(pList);
+    });
+
+    // 2. Fetch Historical Logs
+    const qLogs = query(collection(db, "attendance_logs"));
+    const unsubLogs = onSnapshot(qLogs, (snapshot) => {
+      const lList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setLogs(lList);
       setLoading(false);
     }, (error) => {
-      console.error("Error fetching players:", error);
+      console.error("Error fetching logs:", error);
       setLoading(false);
     });
-    return () => unsubscribe();
+
+    return () => {
+      unsubPlayers();
+      unsubLogs();
+    };
   }, []);
 
   // Helpers
@@ -58,21 +87,81 @@ export default function TransportationModule() {
   const timings = useMemo(() => Array.from(new Set(players.map(p => p.classTiming?.trim()))).filter(Boolean).sort(), [players]);
 
   // Main Filter Logic
-  const filteredPlayers = useMemo(() => {
-    return players.filter(p => {
-      const pSports = p.sports || (p.sport ? p.sport.split(',').map(s=>s.trim()) : []);
-      const matchesSport = filterSport === 'All' || pSports.includes(filterSport);
-      const matchesCoach = filterCoach === 'All' || p.coach === filterCoach;
-      const matchesTiming = filterTiming === 'All' || p.classTiming === filterTiming;
-      const matchesAttendance = filterAttendance === 'All' || p.status === filterAttendance;
-      
-      let matchesTransport = true;
-      if (filterTransport === 'Yes') matchesTransport = isUsingTransport(p);
-      if (filterTransport === 'No') matchesTransport = !isUsingTransport(p);
+  // 📊 DATA AGGREGATION & FILTERING ENGINE
+  const aggregatedPlayers = useMemo(() => {
+    const playerMap = {};
+    
+    // Sort logs by date to ensure chronological history
+    const sortedLogs = [...logs].sort((a,b) => a.date.localeCompare(b.date));
 
-      return matchesSport && matchesCoach && matchesTiming && matchesAttendance && matchesTransport;
+    sortedLogs.forEach(log => {
+      // Check if log falls within range
+      if (log.date < startDate || log.date > endDate) return;
+
+      log.attendance.forEach(record => {
+        const pId = record.id;
+        
+        if (!playerMap[pId]) {
+          // Find master info from players_v2
+          const master = players.find(p => p.id === pId) || {};
+          playerMap[pId] = {
+            id: pId,
+            name: record.name,
+            sport: master.sports?.join(', ') || master.sport || 'N/A',
+            coach: master.coach || 'N/A',
+            timing: master.classTiming || 'N/A',
+            attendedDays: 0,
+            totalDays: 0,
+            transportCountMap: {}, // To track frequency of different transport types
+            history: []
+          };
+        }
+
+        const pData = playerMap[pId];
+        pData.totalDays++;
+        if (record.status === 'present') pData.attendedDays++;
+        
+        // Track transport frequency
+        const tType = record.transportation || 'None';
+        if (tType && tType !== 'None') {
+          pData.transportCountMap[tType] = (pData.transportCountMap[tType] || 0) + (record.status === 'present' ? 1 : 0);
+        }
+
+        pData.history.push({
+          date: log.date,
+          status: record.status,
+          transport: record.transportation
+        });
+      });
     });
-  }, [players, filterSport, filterCoach, filterTiming, filterAttendance, filterTransport]);
+
+    // Final calculations & filtering
+    return Object.values(playerMap).map(p => {
+      // Determine "Main Transport" (most used)
+      const topTransport = Object.entries(p.transportCountMap)
+        .sort((a,b) => b[1] - a[1])[0];
+        
+      const transportSummary = topTransport 
+        ? `${topTransport[0]} (${topTransport[1]} days)` 
+        : "N/A";
+
+      return {
+        ...p,
+        attendanceRate: p.totalDays > 0 ? Math.round((p.attendedDays / p.totalDays) * 100) : 0,
+        transportSummary
+      };
+    }).filter(p => {
+       const matchesSport = filterSport === 'All' || p.sport.includes(filterSport);
+       const matchesCoach = filterCoach === 'All' || p.coach === filterCoach;
+       const matchesTiming = filterTiming === 'All' || p.timing === filterTiming;
+       
+       let matchesTransport = true;
+       if (filterTransport === 'Yes') matchesTransport = p.transportSummary !== 'N/A';
+       if (filterTransport === 'No') matchesTransport = p.transportSummary === 'N/A';
+
+       return matchesSport && matchesCoach && matchesTiming && matchesTransport;
+    });
+  }, [logs, players, startDate, endDate, filterSport, filterCoach, filterTiming, filterTransport]);
 
   // Grouped logic
   const groupedData = useMemo(() => {
@@ -90,53 +179,28 @@ export default function TransportationModule() {
   };
 
   // Metrics Extraction
-  const totalPlayers = filteredPlayers.length;
-  const transportUsers = filteredPlayers.filter(isUsingTransport).length;
-  const nonTransportUsers = totalPlayers - transportUsers;
-  const utilizationRate = totalPlayers > 0 ? Math.round((transportUsers / totalPlayers) * 100) : 0;
-
-  // Chart 1: Bar Chart (Players per slot)
-  const slotStats = useMemo(() => {
-    return Object.keys(groupedData).map(slot => {
-      const count = groupedData[slot].length;
-      return { slot, count };
-    });
-  }, [groupedData]);
-  const maxSlotCount = Math.max(...slotStats.map(s => s.count), 1);
-  const peakSlotObj = slotStats.reduce((max, obj) => obj.count > max.count ? obj : max, { slot: 'N/A', count: 0 });
-  const peakSlotName = peakSlotObj.count > 0 ? peakSlotObj.slot : "N/A";
-
-  // Chart 2: Stacked Bar (Sport vs Transport)
-  const sportStats = useMemo(() => {
-    const sMap = {};
-    filteredPlayers.forEach(p => {
-      const sArr = p.sports || (p.sport ? p.sport.split(',').map(s=>s.trim()) : ['Unassigned']);
-      const isTrans = isUsingTransport(p);
-      sArr.forEach(s => {
-        if (!sMap[s]) sMap[s] = { yes: 0, no: 0, total: 0 };
-        isTrans ? sMap[s].yes++ : sMap[s].no++;
-        sMap[s].total++;
-      });
-    });
-    return Object.entries(sMap)
-      .map(([sport, counts]) => ({ sport, ...counts }))
-      .sort((a,b) => b.total - a.total)
-      .slice(0, 5); // top 5 sports
-  }, [filteredPlayers]);
+  const stats = useMemo(() => {
+    const total = aggregatedPlayers.length;
+    const avgAttendance = total > 0 
+      ? Math.round(aggregatedPlayers.reduce((acc, p) => acc + p.attendanceRate, 0) / total) 
+      : 0;
+    const transportUsers = aggregatedPlayers.filter(p => p.transportSummary !== 'N/A').length;
+    return { total, avgAttendance, transportUsers };
+  }, [aggregatedPlayers]);
 
   const handleExport = (type) => {
-    const exportFormat = filteredPlayers.map(p => ({
+    const exportFormat = aggregatedPlayers.map(p => ({
       "Player Name": p.name,
-      "Sport": (p.sports || [p.sport]).join(', '),
-      "Class Timing": p.classTiming || '',
-      "Coach": p.coach || '',
-      "Attendance Status": p.status || '',
-      "Transportation": p.transportation || 'None',
-      "Using FMAC Transport": isUsingTransport(p) ? 'Yes' : 'No'
+      "Sport": p.sport,
+      "Class Timing": p.timing,
+      "Coach": p.coach,
+      "Days Attended": `${p.attendedDays} / ${p.totalDays}`,
+      "Attendance %": `${p.attendanceRate}%`,
+      "Transport Usage": p.transportSummary
     }));
 
-    if (type === 'excel') exportToExcel(exportFormat, `FMAC_Transport_Report_${new Date().getTime()}`);
-    if (type === 'csv') exportToCSV(exportFormat, `FMAC_Transport_Report_${new Date().getTime()}`);
+    if (type === 'excel') exportToExcel(exportFormat, `FMAC_Transport_Aggregated_${startDate}_to_${endDate}`);
+    if (type === 'csv') exportToCSV(exportFormat, `FMAC_Transport_Aggregated_${startDate}_to_${endDate}`);
     if (type === 'pdf') printToPDF();
   };
 
@@ -144,7 +208,7 @@ export default function TransportationModule() {
     return (
       <div className="jumping-logo-container animate-fade-in" style={{ height: '70vh' }}>
         <img src="/fmac-logo-new.png" alt="Loading" className="jumping-logo" />
-        <span className="jumping-text">Syncing Routes...</span>
+        <span className="jumping-text">Analyzing History...</span>
       </div>
     );
   }
@@ -154,204 +218,153 @@ export default function TransportationModule() {
       
       {/* Header Area */}
       <div className="tm-header-row">
-        <h2 className="tm-title">Transportation Overview</h2>
+        <div>
+          <h2 className="tm-title">Transportation Intelligence</h2>
+          <p className="tm-subtitle">Historical usage & attendance aggregation</p>
+        </div>
         <div className="tm-export-bar">
-          <button className="tm-btn" onClick={() => handleExport('csv')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            Export CSV
-          </button>
-          <button className="tm-btn" onClick={() => handleExport('excel')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><rect x="8" y="12" width="8" height="6"></rect></svg>
-            Export Excel
-          </button>
-          <button className="tm-btn primary" onClick={() => handleExport('pdf')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-            Print PDF
-          </button>
+          <button className="tm-btn" onClick={() => handleExport('csv')}>Export CSV</button>
+          <button className="tm-btn" onClick={() => handleExport('excel')}>Export Excel</button>
+          <button className="tm-btn primary" onClick={() => handleExport('pdf')}>Print PDF</button>
           <button 
             className="tm-btn danger" 
             onClick={() => setResetModalOpen(true)}
             disabled={isResetting}
             title="Clear all current transportation assignments"
           >
-            {isResetting ? "..." : "Reset Transport List"}
+            {isResetting ? "..." : "Reset Data"}
           </button>
         </div>
       </div>
 
-      {/* Primary Filtering Layer */}
-      <div className="controls-panel filter-bar">
-        <select value={filterTiming} onChange={(e) => setFilterTiming(e.target.value)} className="sport-select">
-          <option value="All">All Timings</option>
-          {timings.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-        <select value={filterSport} onChange={(e) => setFilterSport(e.target.value)} className="sport-select">
-          <option value="All">All Sports</option>
-          {sports.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-        <select value={filterCoach} onChange={(e) => setFilterCoach(e.target.value)} className="sport-select">
-          <option value="All">All Coaches</option>
-          {coaches.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-        <select value={filterAttendance} onChange={(e) => setFilterAttendance(e.target.value)} className="sport-select">
-          <option value="All">All Attendance</option>
-          <option value="present">Present</option>
-          <option value="absent">Absent</option>
-        </select>
-        <select value={filterTransport} onChange={(e) => setFilterTransport(e.target.value)} className="sport-select">
-          <option value="All">All Transport Status</option>
-          <option value="Yes">Using Transport</option>
-          <option value="No">No Transport</option>
-        </select>
+      {/* Date & Filters Layer */}
+      <div className="tm-controls-card glass-panel">
+        <div className="tm-date-range">
+          <div className="date-input-group">
+            <label>From</label>
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          </div>
+          <div className="date-input-group">
+            <label>To</label>
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          </div>
+        </div>
+        
+        <div className="tm-quick-filters">
+          <select value={filterTiming} onChange={(e) => setFilterTiming(e.target.value)}>
+            <option value="All">All Timings</option>
+            {timings.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <select value={filterSport} onChange={(e) => setFilterSport(e.target.value)}>
+            <option value="All">All Sports</option>
+            {sports.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <select value={filterTransport} onChange={(e) => setFilterTransport(e.target.value)}>
+            <option value="All">All Transport Status</option>
+            <option value="Yes">Using Transport</option>
+            <option value="No">No Transport</option>
+          </select>
+        </div>
       </div>
 
       {/* Summary Stats Grid */}
       <div className="tm-bento-grid">
         <div className="tm-metric-card">
-          <span className="tm-metric-label">Using Transport</span>
-          <span className="tm-metric-value accent">{transportUsers}</span>
+          <span className="tm-metric-label">Total Players</span>
+          <span className="tm-metric-value">{stats.total}</span>
         </div>
         <div className="tm-metric-card">
-          <span className="tm-metric-label">Without Transport</span>
-          <span className="tm-metric-value">{nonTransportUsers}</span>
+          <span className="tm-metric-label">Transport Users</span>
+          <span className="tm-metric-value accent">{stats.transportUsers}</span>
         </div>
         <div className="tm-metric-card">
-          <span className="tm-metric-label">Utilization Rate</span>
-          <span className="tm-metric-value">{utilizationRate}%</span>
-        </div>
-        <div className="tm-metric-card">
-          <span className="tm-metric-label">Peak Time Slot</span>
-          <span className="tm-metric-value" style={{fontSize: '1.2rem'}}>{peakSlotName}</span>
-        </div>
-      </div>
-
-      {/* Visual Analytics Matrix */}
-      <div className="tm-charts-matrix">
-        
-        {/* Timing Bar Chart Node */}
-        <div className="tm-chart-card">
-          <h3 className="tm-chart-title">Players per Time Slot</h3>
-          <div className="tm-bar-chart">
-            {slotStats.map((slot, idx) => {
-              const pct = (slot.count / maxSlotCount) * 100;
-              return (
-                <div key={idx} className="tm-bar-col">
-                  <div className="tm-bar-tooltip">{slot.count} Players</div>
-                  <div className="tm-bar-col-inner" style={{ height: `${pct}%` }}></div>
-                  <span className="tm-bar-label">{slot.slot.split(' ')[0]}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Transport Split Donut Node */}
-        <div className="tm-chart-card">
-          <h3 className="tm-chart-title">Transport Distribution</h3>
-          <div className="tm-donut-wrapper">
-             <svg width="160" height="160" viewBox="0 0 160 160">
-                <circle cx="80" cy="80" r="70" fill="none" stroke="var(--primary-bg)" strokeWidth="16" />
-                <circle cx="80" cy="80" r="70" fill="none" stroke="var(--accent-color)" strokeWidth="16" 
-                        strokeLinecap="round" strokeDasharray={`${(utilizationRate/100) * 439.8} 439.8`} 
-                        transform="rotate(-90 80 80)" style={{transition: 'all var(--dur-med)'}} />
-             </svg>
-             <div className="tm-donut-center">
-               <strong>{utilizationRate}%</strong>
-               <span>Using</span>
-             </div>
-          </div>
-        </div>
-
-        {/* Top 5 Sports Matrix */}
-        <div className="tm-chart-card">
-          <h3 className="tm-chart-title">Transport By Sport</h3>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            {sportStats.map((stat, idx) => {
-              const total = stat.total || 1;
-              const yesPct = (stat.yes / total) * 100;
-              const noPct = (stat.no / total) * 100;
-              return (
-                <div key={idx} className="tm-stacked-row">
-                  <div className="tm-stacked-label">{stat.sport}</div>
-                  <div className="tm-stacked-track">
-                    <div className="tm-stacked-fill-yes" style={{ width: `${yesPct}%` }}></div>
-                    <div className="tm-stacked-fill-no" style={{ width: `${noPct}%` }}></div>
-                  </div>
-                  <div className="tm-stacked-val">{stat.yes} / {total}</div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Data Groups */}
-      <h3 className="tm-title" style={{ marginTop: '16px' }}>Slot Distributions</h3>
-      <div className="tm-groups-container">
-        {Object.entries(groupedData).map(([slot, playersGroup]) => {
-          const isOpen = expandedGroups[slot];
-          const groupUsing = playersGroup.filter(isUsingTransport).length;
-          
-          return (
-            <div key={slot} className={`tm-group-card ${isOpen ? 'open' : ''}`}>
-              <div className="tm-group-header" onClick={() => toggleGroup(slot)}>
-                <div className="tm-group-title">
-                  <svg className="tm-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                  {slot}
-                </div>
-                <div className="tm-group-stats">
-                  <div className="tm-group-stat">
-                    <span className="tm-gstat-val">{playersGroup.length}</span>
-                    <span className="tm-gstat-lbl">Total</span>
-                  </div>
-                  <div className="tm-group-stat">
-                    <span className="tm-gstat-val" style={{color: 'var(--accent-color)'}}>{groupUsing}</span>
-                    <span className="tm-gstat-lbl">Transport</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="tm-group-body">
-                <table className="tm-table">
-                  <thead>
-                    <tr>
-                      <th>Player Name</th>
-                      <th>Sport</th>
-                      <th>Coach</th>
-                      <th>Attendance</th>
-                      <th>Transport config</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {playersGroup.map(p => (
-                      <tr key={p.firestoreId}>
-                        <td>{p.name}</td>
-                        <td>{
-                            (p.sports || (p.sport ? [p.sport] : [])).map((s,i) => <span key={i} className="badge" style={{marginRight: '4px', opacity: 1, animation: 'none'}}>{s}</span>)
-                          }
-                        </td>
-                        <td style={{color: 'var(--text-muted)'}}>{p.coach || 'N/A'}</td>
-                        <td>
-                          <span className={`status-pill ${p.status === 'present' ? 'present' : 'absent'}`} style={{width: 'auto', padding: '4px 8px'}}>
-                            <span className="status-indicator"></span> {p.status}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`tm-status-pill ${isUsingTransport(p) ? 'yes' : 'no'}`}>
-                            {p.transportation || 'None'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <span className="tm-metric-label">Avg Attendance</span>
+          <div className="tm-stat-with-bar">
+            <span className="tm-metric-value">{stats.avgAttendance}%</span>
+            <div className="mini-progress-track">
+              <div className="mini-progress-fill" style={{ width: `${stats.avgAttendance}%` }}></div>
             </div>
-          );
-        })}
-        {Object.keys(groupedData).length === 0 && (
-          <div className="empty-state">No transport requirements found for the selected filters.</div>
-        )}
+          </div>
+        </div>
+      </div>
+
+      {/* AGGREGATED TABLE */}
+      <div className="tm-table-card glass-panel">
+        <table className="tm-agg-table">
+          <thead>
+            <tr>
+              <th width="40"></th>
+              <th>Player Name</th>
+              <th>Sport / Timing</th>
+              <th>Coach</th>
+              <th>Days Attended</th>
+              <th>Transport Usage</th>
+              <th width="150">Attendance %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {aggregatedPlayers.length > 0 ? (
+              aggregatedPlayers.map(player => (
+                <React.Fragment key={player.id}>
+                  <tr className={`tm-row ${expandedPlayerId === player.id ? 'active' : ''}`} onClick={() => setExpandedPlayerId(expandedPlayerId === player.id ? null : player.id)}>
+                    <td className="expand-cell">
+                      <svg className={`chevron ${expandedPlayerId === player.id ? 'rotated' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </td>
+                    <td>
+                      <div className="p-name-main">{player.name}</div>
+                      <div className="p-id-sub">ID: #{player.id}</div>
+                    </td>
+                    <td>
+                      <div className="p-sport-tag">{player.sport}</div>
+                      <div className="p-timing-sub">{player.timing}</div>
+                    </td>
+                    <td className="p-coach-cell">{player.coach}</td>
+                    <td className="p-days-cell">
+                      <span className="days-val">{player.attendedDays}</span>
+                      <span className="days-total">/ {player.totalDays}</span>
+                    </td>
+                    <td>
+                      <span className={`tm-transport-pill ${player.transportSummary !== 'N/A' ? 'active' : ''}`}>
+                        {player.transportSummary}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="tm-rate-wrapper">
+                        <div className="tm-rate-bar-bg">
+                          <div className={`tm-rate-bar-fill ${player.attendanceRate >= 80 ? 'good' : player.attendanceRate >= 50 ? 'avg' : 'poor'}`} style={{ width: `${player.attendanceRate}%` }}></div>
+                        </div>
+                        <span className="tm-rate-text">{player.attendanceRate}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                  
+                  {expandedPlayerId === player.id && (
+                    <tr className="tm-detail-row">
+                      <td colSpan="7">
+                        <div className="tm-detail-container animate-slide-down">
+                          <h4 className="detail-title">Daily Breakdown</h4>
+                          <div className="detail-grid">
+                            {player.history.map((day, idx) => (
+                              <div key={idx} className="detail-card">
+                                <div className="detail-date">{new Date(day.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</div>
+                                <div className={`detail-status ${day.status}`}>{day.status}</div>
+                                <div className="detail-transport">{day.transport || 'No Transport'}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" className="tm-empty">No data found for this range. Try adjusting the dates.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       <ConfirmModal 
