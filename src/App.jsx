@@ -189,6 +189,9 @@ function App() {
       <div className="main-layout">
         <header className="main-header animate-fade-in">
           <div className="header-left">
+            <div className="mobile-header-logo">
+              <img src="/fmac-logo-new.png" alt="FMAC Logo" />
+            </div>
             <h2>{activeTab === 'dashboard' ? "Today's Attendance" : activeTab === 'history' ? "History Logs" : activeTab === 'analytics' ? "Player Analytics" : "Transportation Overview"}</h2>
           </div>
           <div className="header-right">

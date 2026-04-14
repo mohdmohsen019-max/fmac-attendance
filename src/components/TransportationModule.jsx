@@ -529,7 +529,8 @@ export default function TransportationModule() {
       </div>
 
       {/* DETAILED TABLE */}
-      <div className="tm-table-card glass-panel no-print">
+      {/* DETAILED LOGS SECTION */}
+      <div className="tm-table-card glass-panel no-print desktop-only">
         <table className="tm-agg-table">
           <thead>
             <tr>
@@ -564,6 +565,29 @@ export default function TransportationModule() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="tm-mobile-list mobile-only no-print">
+        {transportData.instances.length > 0 ? (
+          transportData.instances.map((inst, idx) => (
+            <div key={`${inst.id}-${idx}`} className="tm-mobile-card animate-fade-in" style={{ animationDelay: `${idx * 20}ms` }}>
+              <div className="tm-m-card-header">
+                <span className="tm-m-id">#{inst.id}</span>
+                <span className="tm-m-date">{new Date(inst.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+              </div>
+              <div className="tm-m-name">{inst.name}</div>
+              <div className="tm-m-meta">
+                <span>{inst.sport}</span>
+                <span className="divider">•</span>
+                <span>{inst.timing}</span>
+              </div>
+              <div className="tm-m-method-badge">{inst.transport}</div>
+            </div>
+          ))
+        ) : (
+          <div className="tm-empty">No results found.</div>
+        )}
       </div>
 
       <ConfirmModal 

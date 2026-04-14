@@ -8,11 +8,39 @@
   width: 100%;
 }
 
+@media (max-width: 640px) {
+  .tm-container {
+    padding: 0 16px 16px 16px;
+    gap: 16px;
+  }
+}
+
 .tm-header-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-top: 24px;
+}
+
+@media (max-width: 640px) {
+  .tm-header-row {
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  
+  .tm-export-bar {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    justify-content: flex-start;
+  }
+  
+  .tm-btn {
+    white-space: nowrap;
+    font-size: 0.8rem;
+    padding: 10px 14px;
+  }
 }
 
 /* 🎨 Buttons Modernization */
@@ -85,6 +113,29 @@
   padding: 24px;
   flex-wrap: wrap;
   gap: 24px;
+}
+
+@media (max-width: 640px) {
+  .tm-controls-card {
+     padding: 16px;
+     flex-direction: column;
+     align-items: stretch;
+     gap: 16px;
+  }
+  
+  .tm-date-range {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .tm-quick-filters {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .tm-quick-filters select {
+    width: 100%;
+  }
 }
 
 .tm-date-range {
@@ -193,6 +244,28 @@
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr;
   gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .tm-analytics-shelf {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tm-chart-card.full-width {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .tm-analytics-shelf {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .tm-chart-card.full-width {
+    grid-column: span 1;
+  }
+  .tm-chart-card {
+    padding: 16px;
+  }
 }
 
 .tm-chart-card {
@@ -347,6 +420,75 @@
 .tm-transport-pill.active {
   background: #FFE5E8;
   color: var(--accent-color);
+}
+
+/* --- MOBILE LOG CARDS --- */
+.tm-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tm-mobile-card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tm-m-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tm-m-id {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.tm-m-date {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  background: #FFF1F2;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.tm-m-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.tm-m-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.tm-m-meta .divider {
+  opacity: 0.3;
+}
+
+.tm-m-method-badge {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 6px 12px;
+  background: #200f07; /* Midnight Espresso */
+  color: #c5e384; /* Pistachio Frost */
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 10px;
 }
 
 /* ==============================================================

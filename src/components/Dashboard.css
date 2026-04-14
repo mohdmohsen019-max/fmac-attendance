@@ -170,6 +170,26 @@
   color: var(--text-muted);
 }
 
+@media (max-width: 640px) {
+  .dashboard-top {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .stats-bento {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .stat-value {
+    font-size: 2.2rem;
+  }
+  
+  .chart-bento {
+    padding: 16px;
+  }
+}
+
 .controls-panel {
   display: flex;
   justify-content: space-between;
@@ -317,6 +337,37 @@
   font-weight: 600;
   color: var(--status-present);
   white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .master-sticky-header {
+    position: relative; /* Don't stick on mobile to save vertical space for content */
+    box-shadow: none;
+  }
+
+  .controls-panel {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .search-box {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .filter-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .save-btn {
+    width: 100%;
+    text-align: center;
+    padding: 14px;
+  }
 }
 
 .table-container {

@@ -9,6 +9,7 @@ export default function AttendanceHistory() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedLog, setSelectedLog] = useState(null);
+  const [showDetail, setShowDetail] = useState(false);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
@@ -55,7 +56,7 @@ export default function AttendanceHistory() {
   }
 
   return (
-    <div className="history-container">
+    <div className={`history-container ${showDetail ? 'mobile-show-detail' : ''}`}>
       <div className="history-sidebar glass-panel animate-fade-in">
         <div className="sidebar-header-row">
           <h3 className="sidebar-title">Recent Logs</h3>
@@ -73,7 +74,10 @@ export default function AttendanceHistory() {
             <div 
               key={log.id} 
               className={`log-item ${selectedLog?.id === log.id ? 'active' : ''}`}
-              onClick={() => setSelectedLog(log)}
+              onClick={() => {
+                setSelectedLog(log);
+                setShowDetail(true);
+              }}
             >
               <div className="log-date">{new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
               <div className="log-meta">
@@ -93,6 +97,9 @@ export default function AttendanceHistory() {
         {selectedLog ? (
           <>
             <div className="detail-header">
+              <button className="mobile-back-btn" onClick={() => setShowDetail(false)}>
+                ← Back to Logs
+              </button>
               <div>
                 <h2>{new Date(selectedLog.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h2>
                 <p className="detail-subtitle">{selectedLog.timing} • {selectedLog.sport}</p>

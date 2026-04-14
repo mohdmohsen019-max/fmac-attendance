@@ -115,28 +115,37 @@ const MobilePlayerCard = memo(({ player, onToggleStatus, onChangeTransport, inde
         </div>
         <button
           className={`status-btn ${player.status === 'present' ? 'present' : 'absent'}`}
-          onClick={(e) => { e.stopPropagation(); onToggleStatus(player.firestoreId); }}
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            const isMarkingPresent = player.status !== 'present';
+            onToggleStatus(player.firestoreId); 
+            if (isMarkingPresent) setExpanded(true);
+          }}
         >
           <div className="status-indicator"></div>
           <span className="status-text">{player.status === 'present' ? 'Present' : 'Absent'}</span>
         </button>
+        <span className={`card-chevron ${expanded ? 'rotated' : ''}`}>▼</span>
       </div>
       
       {/* Expanded Accordion Details */}
       <div className="player-card-details">
         <div className="mobile-action-row">
           {player.status === 'present' && (
-            <select 
-              className="transport-select mobile-select animate-pop-in" 
-              value={player.transportation || ''} 
-              onChange={e => onChangeTransport(player.firestoreId, e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <option value="" disabled>Select Transport</option>
-              {TRANSPORT_OPTIONS.filter(o => o !== "").map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
+            <div className={`mobile-select-group ${!player.transportation ? 'selection-required' : ''}`}>
+               <label className="mobile-select-label">Choose Transportation Method:</label>
+               <select 
+                className="transport-select mobile-select animate-pop-in" 
+                value={player.transportation || ''} 
+                onChange={e => onChangeTransport(player.firestoreId, e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <option value="" disabled>Select Transport</option>
+                {TRANSPORT_OPTIONS.filter(o => o !== "").map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
           )}
         </div>
 
