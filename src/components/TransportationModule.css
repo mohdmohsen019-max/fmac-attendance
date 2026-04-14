@@ -356,13 +356,18 @@
 
 /* Printing logic */
 @media print {
-  @page { margin: 1cm; size: auto; }
+  @page { margin: 0; size: auto; } /* Full bleed for header */
+
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
   
   body * { visibility: hidden; }
   
   .tm-container, .tm-container * { visibility: none; }
   
-  .dedicated-print-report { 
+  .executive-print-report { 
     display: block !important; 
     visibility: visible !important;
     position: absolute; 
@@ -370,102 +375,282 @@
     top: 0; 
     width: 100%; 
     padding: 0;
-    color: black !important;
+    color: #200f07 !important;
+    background: white;
   }
   
-  .dedicated-print-report * {
+  .executive-print-report * {
     visibility: visible !important;
   }
   
   .no-print { display: none !important; }
 
-  /* Formal Layout Styles */
-  .dpr-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    border-bottom: 2px solid black;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-  }
-
-  .dpr-title-area h1 {
-    font-size: 24pt;
-    margin: 0 0 5px 0;
-    font-weight: bold;
+  /* 1. COVER HEADER */
+  .epr-header {
+    background-color: #200f07 !important;
+    color: white !important;
+    padding: 30px 40px;
+    margin-bottom: 30px;
   }
   
-  .dpr-title-area p {
-    font-size: 12pt;
+  .epr-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .epr-logo {
+    font-size: 24pt;
+    font-weight: 900;
+    color: #c5e384 !important;
+    letter-spacing: 2px;
+  }
+
+  .epr-h1-title {
+    font-size: 20pt;
+    margin: 0 0 5px 0;
+    font-weight: 700;
+    color: white !important;
+  }
+  
+  .epr-h1-sub {
+    font-size: 11pt;
     margin: 0;
-    color: #333;
+    color: #c5e384 !important;
   }
 
-  .dpr-meta {
+  .epr-meta {
     text-align: right;
-    font-size: 10pt;
-    color: #555;
+    font-size: 9pt;
+    color: #DDD !important;
   }
 
-  .dpr-section {
+  /* BODY WRAPPER */
+  .epr-body {
+    padding: 0 40px 40px 40px;
+  }
+
+  /* 2. EXECUTIVE SUMMARY CARDS */
+  .epr-summary-cards {
+    display: flex;
+    gap: 20px;
     margin-bottom: 30px;
   }
 
-  .dpr-section h2 {
-    font-size: 16pt;
-    margin-bottom: 10px;
-    color: black;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-bottom: 1px solid #CCC;
-    padding-bottom: 5px;
+  .epr-card {
+    flex: 1;
+    background: #fdfdfd !important;
+    border: 1px solid #E5E5E5 !important;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+    display: flex;
+    flex-direction: column;
   }
 
-  .dpr-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
-
-  .dpr-table th {
-    background-color: #EEE;
-    color: black;
-    font-weight: bold;
-    text-align: left;
-    padding: 10px;
-    font-size: 10pt;
-    border: 1px solid #AAA;
-  }
-
-  .dpr-table td {
-    padding: 10px;
-    font-size: 12pt;
-    border: 1px solid #AAA;
-    color: black;
-  }
-
-  .dpr-method-table {
-    width: 50%;
-  }
-
-  .dpr-method-table td {
-    font-size: 11pt;
-  }
-
-  .dpr-footer {
-    position: fixed;
+  .epr-card-accent {
+    position: absolute;
+    left: 0;
+    top: 0;
     bottom: 0;
-    width: 100%;
-    text-align: center;
-    font-size: 9pt;
-    color: #888;
-    border-top: 1px solid #CCC;
-    padding-top: 5px;
+    width: 6px;
+    background-color: #c5e384 !important;
+    border-radius: 12px 0 0 12px;
   }
-}
 
-@media (max-width: 1100px) {
-  .tm-analytics-shelf {
-    grid-template-columns: 1fr;
+  .epr-card-label {
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #666 !important;
+    margin-bottom: 8px;
+    padding-left: 8px;
+  }
+
+  .epr-card-value {
+    font-size: 24pt;
+    font-weight: 900;
+    color: #200f07 !important;
+    padding-left: 8px;
+  }
+
+  .epr-card-sub {
+    font-size: 9pt;
+    color: #200f07 !important;
+    padding-left: 8px;
+    margin-top: 4px;
+    opacity: 0.8;
+  }
+
+  /* SECTION TITLES */
+  .epr-section-title {
+    font-size: 14pt;
+    font-weight: 800;
+    color: #200f07 !important;
+    margin: 30px 0 15px 0;
+    border-bottom: 2px solid #E5E5E5 !important;
+    padding-bottom: 8px;
+  }
+
+  /* 3. VISUAL ANALYTICS */
+  .epr-analytics-row {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 20px;
+  }
+
+  .epr-chart-box {
+    flex: 1;
+    background: #fcfcfc !important;
+    border: 1px solid #EEE !important;
+    border-radius: 16px;
+    padding: 20px;
+  }
+
+  .epr-line-chart {
+    flex: 1.5; /* larger */
+  }
+
+  .epr-chart-title {
+    font-size: 11pt;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #200f07 !important;
+  }
+
+  .epr-donut-wrapper {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* Peak Time Grid */
+  .epr-time-grid {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+  }
+
+  .epr-time-card {
+    background: #f8faf7 !important;
+    color: #200f07 !important;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 120px;
+    border: 1px solid #c5e384 !important;
+    border-left: 6px solid #c5e384 !important;
+  }
+
+  .epr-time-label { font-size: 8.5pt; text-transform: uppercase; color: #666 !important; }
+  .epr-time-count { font-size: 14pt; font-weight: 900; }
+
+  /* 4. TRANSPORT METHOD BREAKDOWN (Cards with bars) */
+  .epr-methods-breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+
+  .epr-mb-card {
+    background: white !important;
+    border: 1px solid #EEEEEE !important;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02) !important;
+  }
+
+  .epr-mb-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .epr-mb-title {
+    font-size: 11pt;
+    font-weight: 800;
+    color: #200f07 !important;
+  }
+
+  .epr-mb-count {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #c5e384 !important;
+    background: #200f07 !important;
+    padding: 2px 8px;
+    border-radius: 12px;
+  }
+
+  .epr-mb-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+    font-size: 9pt;
+    color: #555 !important;
+    line-height: 1.5;
+  }
+
+  .epr-mb-track {
+    height: 6px;
+    background: #EEE !important;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .epr-mb-fill {
+    height: 100%;
+    background: #c5e384 !important;
+    border-radius: 4px;
+  }
+
+  /* 5. DETAILED LOG TABLE */
+  .epr-detailed-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #EEE !important;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .epr-detailed-table th {
+    background: #f8faf7 !important;
+    color: #200f07 !important;
+    padding: 12px 16px;
+    font-size: 9pt;
+    font-weight: 800;
+    text-transform: uppercase;
+    text-align: left;
+    border-bottom: 2px solid #E5E5E5 !important;
+  }
+
+  .epr-detailed-table td {
+    padding: 12px 16px;
+    font-size: 9.5pt;
+    border-bottom: 1px solid #EEE !important;
+  }
+
+  .epr-detailed-table tr:nth-child(even) td {
+    background: #fcfcfc !important;
+  }
+
+  .epr-td-id { color: #666 !important; font-family: monospace; }
+  .epr-td-name { font-weight: 700; color: #200f07 !important; }
+  .epr-td-sport { color: #555 !important; }
+  
+  .epr-pill { 
+    font-weight: 700; 
+    color: #200f07 !important; 
+    background: #c5e384 !important; 
+    border-radius: 12px; 
+    padding: 4px 10px; 
+    display: inline-block; 
+    font-size: 8pt;
   }
 }

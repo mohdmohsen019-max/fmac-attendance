@@ -207,61 +207,183 @@ export default function TransportationModule() {
     <div className="tm-container animate-fade-in">
       
       {/* 📄 DEDICATED FORMAL PDF REPORT (ONLY VISIBLE ON PRINT) */}
-      <div className="dedicated-print-report">
-        <div className="dpr-header">
-          <div className="dpr-title-area">
-            <h1>Transportation Logistics Report</h1>
-            <p><strong>Period:</strong> {startDate} to {endDate}</p>
-          </div>
-          <div className="dpr-meta">
-            <p><strong>Generated:</strong><br/>{new Date().toLocaleString()}</p>
-          </div>
+      <div className="executive-print-report">
+        
+        {/* 1. COVER HEADER */}
+        <div className="epr-header">
+           <div className="epr-header-content">
+             <div className="epr-title-block">
+               <h1 className="epr-h1-title">Transportation Logistics Report</h1>
+               <p className="epr-h1-sub">Period: {startDate} to {endDate}</p>
+             </div>
+             <div className="epr-meta">
+               <div className="epr-logo">FMAC</div>
+               <p>Generated: <br/>{new Date().toLocaleString()}</p>
+             </div>
+           </div>
         </div>
 
-        <div className="dpr-section">
-          <h2>Executive Summary</h2>
-          <table className="dpr-table">
-            <thead>
-             <tr>
-               <th>Total Present Players</th>
-               <th>Active Transport Users</th>
-               <th>Utilization Rate</th>
-               <th>Peak Capacity Load</th>
-             </tr>
-            </thead>
-            <tbody>
-             <tr>
-               <td>{stats.totalPresent}</td>
-               <td>{stats.transportUsers}</td>
-               <td>{stats.utilization}%</td>
-               <td>{stats.peak?.count || 0} users ({stats.peak?.label || 'N/A'})</td>
-             </tr>
-            </tbody>
-          </table>
-        </div>
+        <div className="epr-body">
+            
+            {/* 2. EXECUTIVE SUMMARY */}
+            <div className="epr-summary-cards">
+              <div className="epr-card">
+                 <div className="epr-card-accent"></div>
+                 <span className="epr-card-label">Total Present Players</span>
+                 <span className="epr-card-value">{stats.totalPresent}</span>
+              </div>
+              <div className="epr-card">
+                 <div className="epr-card-accent"></div>
+                 <span className="epr-card-label">Active Transport Users</span>
+                 <span className="epr-card-value">{stats.transportUsers}</span>
+              </div>
+              <div className="epr-card">
+                 <div className="epr-card-accent"></div>
+                 <span className="epr-card-label">Utilization Rate</span>
+                 <span className="epr-card-value">{stats.utilization}%</span>
+              </div>
+              <div className="epr-card">
+                 <div className="epr-card-accent"></div>
+                 <span className="epr-card-label">Peak Usage Load</span>
+                 <span className="epr-card-value">{stats.peak?.count || 0}</span>
+                 <span className="epr-card-sub">{stats.peak?.label || 'N/A'}</span>
+              </div>
+            </div>
 
-        <div className="dpr-section">
-          <h2>Transport Method Distribution</h2>
-          <table className="dpr-table dpr-method-table">
-            <thead>
-              <tr>
-                <th style={{width: '70%'}}>Method Assigned</th>
-                <th style={{width: '30%', textAlign: 'center'}}>Total Users</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats.methodSummary.map(m => (
-                <tr key={m.method}>
-                  <td style={{fontWeight: 700}}>{m.method}</td>
-                  <td style={{textAlign: 'center'}}>{m.count}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            {/* 3. VISUAL ANALYTICS */}
+            <h2 className="epr-section-title">Visual Analytics</h2>
+            
+            <div className="epr-analytics-row">
+               {/* A. Daily Trend (Line Chart pseudo-SVG) */}
+               <div className="epr-chart-box epr-line-chart">
+                  <h3 className="epr-chart-title">Daily Transport Trend</h3>
+                  <div className="epr-chart-content">
+                     <svg width="100%" height="150" viewBox="0 0 500 150" preserveAspectRatio="none">
+                       {(() => {
+                          const dates = Object.keys(transportData.trend).sort();
+                          if (dates.length < 2) return null;
+                          const maxVal = Math.max(...Object.values(transportData.trend), 1);
+                          const points = dates.map((d, i) => {
+                            const x = (i / (dates.length - 1)) * 500;
+                            const y = 130 - (transportData.trend[d] / maxVal) * 110;
+                            return `${x},${y}`;
+                          }).join(' ');
+                          
+                          return (
+                            <>
+                              <path d={`M ${points.split(' ')[0]} L ${points}`} fill="none" stroke="#200f07" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                              {dates.map((d, i) => {
+                                const x = (i / (dates.length - 1)) * 500;
+                                const y = 130 - (transportData.trend[d] / maxVal) * 110;
+                                return <circle key={i} cx={x} cy={y} r="5" fill="#c5e384" stroke="#200f07" strokeWidth="2" />;
+                              })}
+                            </>
+                          );
+                        })()}
+                     </svg>
+                  </div>
+               </div>
 
-        <div className="dpr-footer">
-          FMAC System Generated Document
+               {/* B. Transport Distribution (SVG Donut Chart) */}
+               <div className="epr-chart-box">
+                  <h3 className="epr-chart-title">Transport Distribution</h3>
+                  <div className="epr-donut-wrapper">
+                    <svg width="100%" height="150" viewBox="0 0 42 42">
+                       <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f0f0f0" strokeWidth="6" />
+                       {(() => {
+                           let cumPct = 0;
+                           const colors = ['#c5e384', '#200f07', '#a0cd47', '#4a2512', '#769435', '#8a5035'];
+                           return stats.methodSummary.map((item, i) => {
+                             const dash = (item.count / Math.max(stats.transportUsers, 1)) * 100;
+                             const bgDash = 100 - dash;
+                             const offset = 25 - cumPct;
+                             cumPct += dash;
+                             if(dash === 0) return null;
+                             return (
+                               <circle key={`donut-${i}`} cx="21" cy="21" r="15.915" fill="transparent"
+                                  stroke={colors[i % colors.length]}
+                                  strokeWidth="6"
+                                  strokeDasharray={`${dash} ${bgDash}`}
+                                  strokeDashoffset={offset}
+                               />
+                             )
+                           });
+                       })()}
+                       <circle cx="21" cy="21" r="12" fill="white" />
+                       <text x="21" y="21" textAnchor="middle" dominantBaseline="middle" fill="#200f07" fontSize="6" fontWeight="bold">
+                         {stats.transportUsers}
+                       </text>
+                    </svg>
+                  </div>
+               </div>
+            </div>
+
+            {/* C. Time Load GRID */}
+            <h2 className="epr-section-title">Peak Demand by Time Slot</h2>
+            <div className="epr-time-grid">
+               {Object.entries(transportData.load).sort((a,b) => b[1]-a[1]).map(([time, count]) => (
+                  <div key={time} className="epr-time-card">
+                     <span className="epr-time-label">{time}</span>
+                     <span className="epr-time-count">{count} users</span>
+                  </div>
+               ))}
+            </div>
+
+            {/* 4. TRANSPORT METHOD BREAKDOWN */}
+            <h2 className="epr-section-title">Transport Method Intelligence</h2>
+            <div className="epr-methods-breakdown-grid">
+               {stats.methodSummary.map(m => {
+                  const percent = Math.round((m.count / Math.max(stats.transportUsers, 1)) * 100);
+                  return (
+                     <div key={`m-bkd-${m.method}`} className="epr-mb-card">
+                        <div className="epr-mb-header">
+                           <span className="epr-mb-title">{m.method}</span>
+                           <span className="epr-mb-count">{m.count} Usr</span>
+                        </div>
+                        <ul className="epr-mb-list">
+                           <li>Total Users: <strong>{m.count}</strong></li>
+                           <li>Share of Demand: <strong>{percent}%</strong></li>
+                        </ul>
+                        <div className="epr-mb-track"><div className="epr-mb-fill" style={{width: `${percent}%`}}></div></div>
+                     </div>
+                  )
+               })}
+            </div>
+
+            {/* 5. DETAILED LOG */}
+            <h2 className="epr-section-title">Detailed Passenger Ledger</h2>
+            <table className="epr-detailed-table">
+               <thead>
+                 <tr>
+                   <th style={{ width: '12%' }}>Player ID</th>
+                   <th style={{ width: '25%' }}>Player Name</th>
+                   <th style={{ width: '20%' }}>Sport</th>
+                   <th style={{ width: '18%' }}>Class Timing</th>
+                   <th style={{ width: '13%' }}>Date</th>
+                   <th style={{ width: '12%' }}>Transport</th>
+                 </tr>
+               </thead>
+               <tbody>
+                  {transportData.instances.length > 0 ? (
+                    transportData.instances.map((inst, idx) => (
+                      <tr key={`epr-${inst.id}-${idx}`}>
+                        <td className="epr-td-id">#{inst.id}</td>
+                        <td className="epr-td-name">{inst.name}</td>
+                        <td className="epr-td-sport">{inst.sport}</td>
+                        <td>{inst.timing}</td>
+                        <td>{new Date(inst.date).toLocaleDateString('en-GB')}</td>
+                        <td className="epr-td-transport">
+                          <span className="epr-pill">{inst.transport}</span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No records found for this period.</td>
+                    </tr>
+                  )}
+               </tbody>
+            </table>
         </div>
       </div>
 
