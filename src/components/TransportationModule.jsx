@@ -40,6 +40,7 @@ export default function TransportationModule() {
   const [filterSport, setFilterSport] = useState('All');
   const [filterCoach, setFilterCoach] = useState('All');
   const [filterTiming, setFilterTiming] = useState('All');
+  const [filterAttendance, setFilterAttendance] = useState('All'); // 'All', 'attended', 'absent_only'
   const [filterTransport, setFilterTransport] = useState('All'); // 'All', 'Yes', 'No'
 
   useEffect(() => {
@@ -154,11 +155,15 @@ export default function TransportationModule() {
        const matchesCoach = filterCoach === 'All' || p.coach === filterCoach;
        const matchesTiming = filterTiming === 'All' || p.timing === filterTiming;
        
+       let matchesAttendance = true;
+       if (filterAttendance === 'attended') matchesAttendance = p.attendedDays > 0;
+       if (filterAttendance === 'absent_only') matchesAttendance = p.attendedDays === 0;
+
        let matchesTransport = true;
        if (filterTransport === 'Yes') matchesTransport = p.transportSummary !== 'N/A';
        if (filterTransport === 'No') matchesTransport = p.transportSummary === 'N/A';
 
-       return matchesSport && matchesCoach && matchesTiming && matchesTransport;
+       return matchesSport && matchesCoach && matchesTiming && matchesAttendance && matchesTransport;
     });
   }, [logs, players, startDate, endDate, filterSport, filterCoach, filterTiming, filterTransport]);
 
@@ -242,6 +247,11 @@ export default function TransportationModule() {
           <select value={filterSport} onChange={(e) => setFilterSport(e.target.value)}>
             <option value="All">All Sports</option>
             {sports.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <select value={filterAttendance} onChange={(e) => setFilterAttendance(e.target.value)}>
+            <option value="All">All Attendance</option>
+            <option value="attended">Has Presence</option>
+            <option value="absent_only">No Presence (Absent Only)</option>
           </select>
           <select value={filterTransport} onChange={(e) => setFilterTransport(e.target.value)}>
             <option value="All">All Transport Status</option>
