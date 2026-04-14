@@ -156,25 +156,25 @@ function App() {
             className={`sidebar-link ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => handleTabChange('dashboard')}
           >
-            📋 Today's Attendance
+            Today's Attendance
           </button>
           <button 
             className={`sidebar-link ${activeTab === 'history' ? 'active' : ''}`}
             onClick={() => handleTabChange('history')}
           >
-            📜 History Logs
+            History Logs
           </button>
           <button 
             className={`sidebar-link ${activeTab === 'analytics' ? 'active' : ''}`}
             onClick={() => handleTabChange('analytics')}
           >
-            📊 Player Analytics
+            Player Analytics
           </button>
           <button 
             className={`sidebar-link ${activeTab === 'transportation' ? 'active' : ''}`}
             onClick={() => handleTabChange('transportation')}
           >
-            🚍 Transportation
+            Transportation
           </button>
         </nav>
         

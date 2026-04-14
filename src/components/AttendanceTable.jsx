@@ -156,8 +156,8 @@ const MobilePlayerCard = memo(({ player, onToggleStatus, onChangeTransport, inde
           }
         </div>
         <div className="details-row">
-          <span className="card-detail">🕐 {player.classTiming}</span>
-          <span className="card-detail">👤 {player.coach}</span>
+          <span className="card-detail">Timing: {player.classTiming}</span>
+          <span className="card-detail">Coach: {player.coach}</span>
         </div>
       </div>
     </div>

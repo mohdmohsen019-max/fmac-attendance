@@ -352,7 +352,7 @@ export default function Dashboard() {
             onClick={handleSaveAttendance} 
             disabled={isSaving}
           >
-            {isSaving ? 'Saving...' : `💾 Save (${filteredPlayers.length})`}
+            {isSaving ? 'Saving...' : `Save Attendance (${filteredPlayers.length})`}
           </button>
           <button 
             className="save-btn" 
@@ -360,7 +360,7 @@ export default function Dashboard() {
             disabled={isSaving}
             style={{ backgroundColor: '#1A1A1A' }}
           >
-            ⚠️ Sync XLSX to DB
+            Sync XLSX to DB
           </button>
           <button 
             className="save-btn" 
@@ -369,7 +369,7 @@ export default function Dashboard() {
             style={{ backgroundColor: '#DC2626' }}
             title="Reset all arrival statuses for today"
           >
-            🔥 Reset Daily List
+            Reset Daily List
           </button>
           {saveMessage && <span className="save-msg">{saveMessage}</span>}
         </div>
@@ -444,7 +444,7 @@ export default function Dashboard() {
           <div className="custom-modal glass-panel animate-pop-in">
             <div className="modal-header">
               <div className="modal-title-group">
-                <span className="modal-icon">⚠️</span>
+                <span className="modal-icon">!!!</span>
                 <h3>Action Required</h3>
               </div>
               <button 
