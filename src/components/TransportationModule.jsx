@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { exportToExcel, exportToCSV, printToPDF } from '../utils/exportEngine';
@@ -40,10 +40,7 @@ export default function TransportationModule() {
   const [filterSport, setFilterSport] = useState('All');
   const [filterCoach, setFilterCoach] = useState('All');
   const [filterTiming, setFilterTiming] = useState('All');
-  const [filterAttendance, setFilterAttendance] = useState('All'); // 'All', 'present', 'absent'
   const [filterTransport, setFilterTransport] = useState('All'); // 'All', 'Yes', 'No'
-
-  const [expandedGroups, setExpandedGroups] = useState({});
 
   useEffect(() => {
     setLoading(true);
@@ -92,14 +89,16 @@ export default function TransportationModule() {
     const playerMap = {};
     
     // Sort logs by date to ensure chronological history
-    const sortedLogs = [...logs].sort((a,b) => a.date.localeCompare(b.date));
+    const sortedLogs = [...logs].sort((a,b) => (a.date || '').localeCompare(b.date || ''));
 
     sortedLogs.forEach(log => {
       // Check if log falls within range
-      if (log.date < startDate || log.date > endDate) return;
+      if (!log.date || log.date < startDate || log.date > endDate) return;
+      if (!log.attendance || !Array.isArray(log.attendance)) return;
 
       log.attendance.forEach(record => {
         const pId = record.id;
+        if (!pId) return;
         
         if (!playerMap[pId]) {
           // Find master info from players_v2
@@ -162,21 +161,6 @@ export default function TransportationModule() {
        return matchesSport && matchesCoach && matchesTiming && matchesTransport;
     });
   }, [logs, players, startDate, endDate, filterSport, filterCoach, filterTiming, filterTransport]);
-
-  // Grouped logic
-  const groupedData = useMemo(() => {
-    const groups = {};
-    filteredPlayers.forEach(p => {
-      const timingKey = p.classTiming || 'Unscheduled';
-      if (!groups[timingKey]) groups[timingKey] = [];
-      groups[timingKey].push(p);
-    });
-    return Object.fromEntries(Object.entries(groups).sort());
-  }, [filteredPlayers]);
-
-  const toggleGroup = (timing) => {
-    setExpandedGroups(prev => ({ ...prev, [timing]: !prev[timing] }));
-  };
 
   // Metrics Extraction
   const stats = useMemo(() => {
