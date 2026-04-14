@@ -15,6 +15,55 @@
   margin-top: 24px;
 }
 
+/* 🎨 Buttons Modernization */
+.tm-export-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.tm-btn {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background: white;
+  color: var(--text-main);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.tm-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+  border-color: #CCC;
+}
+
+.tm-btn.primary {
+  background: var(--accent-color);
+  color: white;
+  border: none;
+}
+
+.tm-btn.primary:hover {
+  background: #8a252c;
+  box-shadow: 0 6px 16px rgba(164, 44, 52, 0.25);
+}
+
+.tm-btn.danger {
+  background: #FFF0F0;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+.tm-btn.danger:hover {
+  background: #FEE2E2;
+  box-shadow: 0 6px 12px rgba(220, 38, 38, 0.15);
+}
+
 .tm-title {
   font-size: 1.75rem;
   font-weight: 800;
@@ -75,6 +124,25 @@
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text-muted);
+}
+
+.date-input-group input {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: #F4F4F5;
+  font-family: inherit;
+  font-weight: 700;
+  color: var(--text-main);
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.date-input-group input:hover,
+.date-input-group input:focus {
+  background: white;
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 12px rgba(164, 44, 52, 0.1);
 }
 
 .tm-quick-filters {
@@ -315,81 +383,72 @@
     width: 100%; 
     padding: 0;
     gap: 16px;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
   .no-print { display: none !important; }
+  
+  /* Hide the table physically from print layout */
+  .tm-table-card { display: none !important; }
+
   .tm-print-header { 
     display: block !important; 
     padding-bottom: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+    border-bottom: 3px solid var(--accent-color);
   }
 
   .report-title {
-    font-size: 20pt;
+    font-size: 22pt;
+    color: var(--text-main);
   }
   
   .tm-bento-grid {
     grid-template-columns: repeat(4, 1fr) !important;
-    gap: 12px;
+    gap: 16px;
+    margin-bottom: 10px;
   }
 
   .tm-metric-card {
-    padding: 12px 16px;
-    border: 1px solid #CCC !important;
-    box-shadow: none !important;
+    padding: 16px;
+    border: none !important;
+    background: #F8F9FA !important;
+    border-left: 4px solid var(--accent-color) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
     margin-bottom: 0;
   }
 
   .tm-analytics-shelf {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 24px;
+    margin-top: 24px;
+  }
+
+  .line-card {
+    grid-column: span 2;
   }
 
   .tm-chart-card {
-    padding: 16px;
-    border: 1px solid #CCC !important;
-    box-shadow: none !important;
+    padding: 24px;
+    border: none !important;
+    background: #F8F9FA !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
     margin-bottom: 0;
     break-inside: avoid;
   }
   
   .tm-chart-title {
-    font-size: 0.85rem;
-    margin-bottom: 12px;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    color: var(--text-main);
   }
 
   .tm-line-chart {
-    height: 120px;
+    height: 200px;
     padding-bottom: 0;
-  }
-
-  .tm-table-card {
-    border: 1px solid #CCC !important;
-    box-shadow: none !important;
-    border-radius: 8px;
-    page-break-before: auto;
-  }
-
-  .tm-agg-table {
-    font-size: 0.7rem;
-  }
-  
-  .tm-agg-table th {
-    background: #F0F0F0 !important;
-    color: black !important;
-    padding: 8px 10px !important;
-    border-bottom: 1px solid #CCC !important;
-  }
-
-  .tm-row-instance td {
-    padding: 8px 10px !important;
-    border-bottom: 1px solid #EEE !important;
-  }
-
-  .tm-transport-pill {
-    padding: 2px 8px;
-    font-size: 0.65rem;
   }
 }
 
