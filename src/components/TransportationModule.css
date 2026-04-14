@@ -78,24 +78,8 @@
 }
 
 /* Print Specifics */
-.tm-print-header {
+.dedicated-print-report {
   display: none;
-  border-bottom: 2px solid #333;
-  padding-bottom: 20px;
-  margin-bottom: 24px;
-}
-
-.report-title {
-  font-size: 24pt;
-  margin: 0;
-}
-
-.report-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10pt;
-  color: #666;
-  margin-top: 8px;
 }
 
 /* Controls */
@@ -375,80 +359,108 @@
   @page { margin: 1cm; size: auto; }
   
   body * { visibility: hidden; }
-  .tm-container, .tm-container * { visibility: visible; }
-  .tm-container { 
+  
+  .tm-container, .tm-container * { visibility: none; }
+  
+  .dedicated-print-report { 
+    display: block !important; 
+    visibility: visible !important;
     position: absolute; 
     left: 0; 
     top: 0; 
     width: 100%; 
     padding: 0;
-    gap: 16px;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    color: black !important;
+  }
+  
+  .dedicated-print-report * {
+    visibility: visible !important;
   }
   
   .no-print { display: none !important; }
-  
-  /* Hide the table physically from print layout */
-  .tm-table-card { display: none !important; }
 
-  .tm-print-header { 
-    display: block !important; 
+  /* Formal Layout Styles */
+  .dpr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid black;
     padding-bottom: 10px;
     margin-bottom: 20px;
-    border-bottom: 3px solid var(--accent-color);
   }
 
-  .report-title {
-    font-size: 22pt;
-    color: var(--text-main);
+  .dpr-title-area h1 {
+    font-size: 24pt;
+    margin: 0 0 5px 0;
+    font-weight: bold;
   }
   
-  .tm-bento-grid {
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 16px;
+  .dpr-title-area p {
+    font-size: 12pt;
+    margin: 0;
+    color: #333;
+  }
+
+  .dpr-meta {
+    text-align: right;
+    font-size: 10pt;
+    color: #555;
+  }
+
+  .dpr-section {
+    margin-bottom: 30px;
+  }
+
+  .dpr-section h2 {
+    font-size: 16pt;
     margin-bottom: 10px;
+    color: black;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #CCC;
+    padding-bottom: 5px;
   }
 
-  .tm-metric-card {
-    padding: 16px;
-    border: none !important;
-    background: #F8F9FA !important;
-    border-left: 4px solid var(--accent-color) !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
-    margin-bottom: 0;
+  .dpr-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
   }
 
-  .tm-analytics-shelf {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 24px;
-    margin-top: 24px;
+  .dpr-table th {
+    background-color: #EEE;
+    color: black;
+    font-weight: bold;
+    text-align: left;
+    padding: 10px;
+    font-size: 10pt;
+    border: 1px solid #AAA;
   }
 
-  .line-card {
-    grid-column: span 2;
+  .dpr-table td {
+    padding: 10px;
+    font-size: 12pt;
+    border: 1px solid #AAA;
+    color: black;
   }
 
-  .tm-chart-card {
-    padding: 24px;
-    border: none !important;
-    background: #F8F9FA !important;
-    border-radius: 16px !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
-    margin-bottom: 0;
-    break-inside: avoid;
-  }
-  
-  .tm-chart-title {
-    font-size: 1rem;
-    margin-bottom: 16px;
-    color: var(--text-main);
+  .dpr-method-table {
+    width: 50%;
   }
 
-  .tm-line-chart {
-    height: 200px;
-    padding-bottom: 0;
+  .dpr-method-table td {
+    font-size: 11pt;
+  }
+
+  .dpr-footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 9pt;
+    color: #888;
+    border-top: 1px solid #CCC;
+    padding-top: 5px;
   }
 }
 

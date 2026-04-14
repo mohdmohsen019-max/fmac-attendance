@@ -206,12 +206,62 @@ export default function TransportationModule() {
   return (
     <div className="tm-container animate-fade-in">
       
-      {/* 📄 PRINT ONLY HEADER (Structured Report) */}
-      <div className="tm-print-header">
-        <h1 className="report-title">FMAC Transportation Intelligence Report</h1>
-        <div className="report-meta">
-          <span>Period: {startDate} to {endDate}</span>
-          <span>Generated: {new Date().toLocaleString()}</span>
+      {/* 📄 DEDICATED FORMAL PDF REPORT (ONLY VISIBLE ON PRINT) */}
+      <div className="dedicated-print-report">
+        <div className="dpr-header">
+          <div className="dpr-title-area">
+            <h1>Transportation Logistics Report</h1>
+            <p><strong>Period:</strong> {startDate} to {endDate}</p>
+          </div>
+          <div className="dpr-meta">
+            <p><strong>Generated:</strong><br/>{new Date().toLocaleString()}</p>
+          </div>
+        </div>
+
+        <div className="dpr-section">
+          <h2>Executive Summary</h2>
+          <table className="dpr-table">
+            <thead>
+             <tr>
+               <th>Total Present Players</th>
+               <th>Active Transport Users</th>
+               <th>Utilization Rate</th>
+               <th>Peak Capacity Load</th>
+             </tr>
+            </thead>
+            <tbody>
+             <tr>
+               <td>{stats.totalPresent}</td>
+               <td>{stats.transportUsers}</td>
+               <td>{stats.utilization}%</td>
+               <td>{stats.peak?.count || 0} users ({stats.peak?.label || 'N/A'})</td>
+             </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div className="dpr-section">
+          <h2>Transport Method Distribution</h2>
+          <table className="dpr-table dpr-method-table">
+            <thead>
+              <tr>
+                <th style={{width: '70%'}}>Method Assigned</th>
+                <th style={{width: '30%', textAlign: 'center'}}>Total Users</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stats.methodSummary.map(m => (
+                <tr key={m.method}>
+                  <td style={{fontWeight: 700}}>{m.method}</td>
+                  <td style={{textAlign: 'center'}}>{m.count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="dpr-footer">
+          FMAC System Generated Document
         </div>
       </div>
 
@@ -266,7 +316,7 @@ export default function TransportationModule() {
       </div>
 
       {/* Summary Stats Grid (Report Friendly) */}
-      <div className="tm-bento-grid">
+      <div className="tm-bento-grid no-print">
         <div className="tm-metric-card">
           <span className="tm-metric-label">Total Present Players</span>
           <span className="tm-metric-value">{stats.totalPresent}</span>
@@ -294,7 +344,7 @@ export default function TransportationModule() {
       </div>
 
       {/* 📊 ANALYTICS MATRIX */}
-      <div className="tm-analytics-shelf">
+      <div className="tm-analytics-shelf no-print">
         
         {/* Daily Trend Load (Line Chart) */}
         <div className="tm-chart-card line-card">
@@ -369,7 +419,7 @@ export default function TransportationModule() {
       </div>
 
       {/* DETAILED TABLE */}
-      <div className="tm-table-card glass-panel">
+      <div className="tm-table-card glass-panel no-print">
         <table className="tm-agg-table">
           <thead>
             <tr>
