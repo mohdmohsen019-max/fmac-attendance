@@ -318,7 +318,7 @@ export default function TransportationModule() {
                         <span style={{color: isPeak?'#C70017':'#333', fontWeight: 700}}>{count} users</span>
                       </div>
                       <div className="pdf-c-bar-track">
-                        <div className="pdf-c-bar-fill" style={{ width: `${(count/Math.max(...Object.values(transportData.load),1))*100}%`, background: isPeak ? '#C70017' : '#c5e384' }}></div>
+                        <div className="pdf-c-bar-fill" style={{ width: `${(count/Math.max(...Object.values(transportData.load),1))*100}%`, background: isPeak ? '#C70017' : '#DED2C1' }}></div>
                       </div>
                     </div>
                   )})}
@@ -331,8 +331,8 @@ export default function TransportationModule() {
                 <div className="pdf-c-donut-standin">
                    {stats.methodSummary.map((m, i) => {
                      const perc = Math.round((m.count / Math.max(stats.transportUsers, 1)) * 100);
-                     // Generate pistacio variations
-                     const shade = `hsl(79, 60%, ${40 + (i * 10)}%)`; 
+                     // Generate Greige/Neutral shades for distribution
+                     const shade = i === 0 ? '#C70017' : `hsl(37, 24%, ${40 + (i * 10)}%)`; 
                      return (
                         <div key={m.method} className="pdf-c-donut-item">
                            <div className="pd-dot" style={{background: shade}}></div>

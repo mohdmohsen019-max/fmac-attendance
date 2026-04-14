@@ -2,14 +2,14 @@
   --primary-bg: #F4F1ED; /* Very light greige tint for background */
   --secondary-bg: #FFFFFF; /* Pure white for input panels */
   --glass-border: #DED2C1; /* Soft Greige for structural lines */
-  --text-main: #200f07; /* Deep espresso */
+  --text-main: #0A0A0A; /* FMAC Neutral Black */
   --text-muted: #6B625E; /* Muted espresso/greige */
   
   --accent-color: #C70017; /* FMAC Cherry Red */
   --accent-hover: #9E0012;
   --accent-glow: rgba(199, 0, 23, 0.15);
   
-  --button-bg: #200f07; /* Dark navy/espresso */
+  --button-bg: #0A0A0A; /* FMAC Neutral Black */
   
   --status-present: #16A34A; 
   --status-present-bg: #F0FDF4;

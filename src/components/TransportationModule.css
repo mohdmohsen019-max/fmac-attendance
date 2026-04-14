@@ -484,8 +484,8 @@
   align-self: flex-start;
   margin-top: 4px;
   padding: 6px 12px;
-  background: #200f07; /* Midnight Espresso */
-  color: #c5e384; /* Pistachio Frost */
+  background: var(--button-bg); /* Use global variable which I'll update to #0A0A0A */
+  color: var(--glass-border); /* Soft Greige */
   font-size: 0.75rem;
   font-weight: 700;
   border-radius: 10px;
@@ -506,7 +506,7 @@
 
 /* 1. COVER HEADER */
 .pdf-c-header {
-  background: #200f07; /* Midnight Espresso */
+  background: #0A0A0A; /* FMAC Neutral Black */
   color: white;
   display: flex;
   align-items: center;
@@ -550,8 +550,8 @@
 .pdf-c-section-title {
   font-size: 16px;
   font-weight: 800;
-  color: #200f07;
-  border-bottom: 2px solid #DED2C1;
+  color: #0A0A0A;
+  border-bottom: 2px solid #DED2C1; /* FMAC Soft Greige */
   padding-bottom: 8px;
   margin-bottom: 16px;
   text-transform: uppercase;
@@ -566,7 +566,7 @@
 .pdf-c-card {
   background: #FFF;
   border: 1px solid #EEE;
-  border-left: 5px solid #c5e384; /* Pistachio Frost */
+  border-left: 5px solid #C70017; /* FMAC Cherry Red */
   border-radius: 12px;
   padding: 20px 16px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.03);
@@ -602,7 +602,7 @@
 .c-card-val {
   font-size: 26px;
   font-weight: 900;
-  color: #200f07;
+  color: #0A0A0A;
   margin-top: 4px;
 }
 
@@ -636,7 +636,7 @@
 .pdf-c-chart-box h3 {
   font-size: 12px;
   font-weight: 800;
-  color: #200f07;
+  color: #0A0A0A;
   margin: 0 0 10px 0;
 }
 
@@ -695,7 +695,7 @@
 
 .pd-lbl {
   flex-grow: 1;
-  color: #200f07;
+  color: #0A0A0A;
 }
 
 .pd-val {
@@ -728,14 +728,14 @@
   margin: 0;
   font-size: 14px;
   font-weight: 800;
-  color: #200f07;
+  color: #0A0A0A;
 }
 
 .pdf-m-perc {
   font-size: 12px;
   font-weight: 800;
-  color: #c5e384;
-  background: #200f07;
+  color: #DED2C1;
+  background: #0A0A0A;
   padding: 2px 8px;
   border-radius: 12px;
 }
@@ -755,7 +755,7 @@
 
 .pdf-m-mini-bar-fill {
   height: 100%;
-  background: #c5e384;
+  background: #C70017;
 }
 
 
