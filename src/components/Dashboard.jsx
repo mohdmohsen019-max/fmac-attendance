@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import AttendanceTable from './AttendanceTable';
@@ -12,48 +13,105 @@ export default function Dashboard() {
   const [filterTiming, setFilterTiming] = useState('All');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [missingTransportModal, setMissingTransportModal] = useState({ isOpen: false, players: [] });
+
+  // TEMP SCRIPT TO FORCE UPDATE CLASS TIMINGS FROM EXCEL
+  const syncExcelDB = async () => {
+    if (!window.confirm("WARNING: This will overwrite ALL class timings in the live players_v2 database matching the new Excel payload. Proceed?")) return;
+    setIsSaving(true);
+    setSaveMessage('Downloading schema...');
+    try {
+      const res = await fetch('/cleaned_players.json');
+      const newPlayers = await res.json();
+      setSaveMessage(`Loaded ${newPlayers.length} records. Syncing...`);
+      
+      let updatedCount = 0;
+      for (const p of players) {
+        const match = newPlayers.find(n => n['Name'] === p.name);
+        if (match && match['Training From Time'] && match['Training To Time']) {
+          const newTiming = `${match['Training From Time']} - ${match['Training To Time']}`;
+          if (newTiming !== p.classTiming) {
+            await updateDoc(doc(db, "players_v2", p.firestoreId), {
+              classTiming: newTiming
+            });
+            updatedCount++;
+          }
+        }
+      }
+      setSaveMessage(`✅ Synchronized ${updatedCount} players!`);
+      setTimeout(() => setSaveMessage(''), 5000);
+    } catch (e) {
+      console.error(e);
+      setSaveMessage('Error Syncing DB');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
-    const q = query(collection(db, "players"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    console.log("Dashboard: Initializing Firebase listener for players_v2...");
+    setLoading(true);
+
+    const qNew = query(collection(db, "players_v2"));
+    const unsubscribeNew = onSnapshot(qNew, (querySnapshot) => {
       const playersData = [];
       const today = new Date().toLocaleDateString('en-CA');
+      
       querySnapshot.forEach((docSnapshot) => {
         const data = docSnapshot.data();
         let status = data.status || 'absent';
         
         if (status === 'present' && data.lastActionDate !== today) {
           status = 'absent';
-          // Clean up stale 'present' status in background
           updateDoc(docSnapshot.ref, { status: 'absent' }).catch(console.error);
         }
         
-        playersData.push({ ...data, firestoreId: docSnapshot.id, status });
+        playersData.push({ 
+          ...data, 
+          firestoreId: docSnapshot.id, 
+          status, 
+          source: 'v2' 
+        });
       });
+      
+      console.log(`Dashboard: Fetched ${playersData.length} active players from players_v2.`);
       setPlayers(playersData);
       setLoading(false);
     }, (error) => {
-      console.error("Error fetching players:", error);
+      console.error("Error fetching players_v2:", error);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeNew();
   }, []);
-
 
   const handleToggleStatus = async (firestoreId) => {
     const player = players.find(p => p.firestoreId === firestoreId);
     if (!player) return;
 
     const newStatus = player.status === 'present' ? 'absent' : 'present';
-    const playerRef = doc(db, "players", firestoreId);
+    const playerRef = doc(db, "players_v2", firestoreId);
     const today = new Date().toLocaleDateString('en-CA');
+    const newTransport = newStatus === 'absent' ? '' : (player.transportation || '');
     
     try {
-      await updateDoc(playerRef, { status: newStatus, lastActionDate: today });
+      await updateDoc(playerRef, { 
+        status: newStatus, 
+        transportation: newTransport,
+        lastActionDate: today 
+      });
     } catch (error) {
       console.error("Error updating player status:", error);
       alert("Failed to update status. Please check your internet connection.");
+    }
+  };
+
+  const handleChangeTransport = async (firestoreId, newTransport) => {
+    const playerRef = doc(db, "players_v2", firestoreId);
+    try {
+      await updateDoc(playerRef, { transportation: newTransport });
+    } catch (error) {
+      console.error("Error updating transport:", error);
     }
   };
 
@@ -63,13 +121,18 @@ export default function Dashboard() {
       return;
     }
 
+    const invalidPlayers = filteredPlayers.filter(p => p.status === 'present' && !p.transportation);
+    if (invalidPlayers.length > 0) {
+      setMissingTransportModal({ isOpen: true, players: invalidPlayers });
+      return;
+    }
+
     setIsSaving(true);
     setSaveMessage('Saving Snapshot...');
 
     try {
-      // Save a historical snapshot
       await addDoc(collection(db, "attendance_logs"), {
-        date: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
+        date: new Date().toLocaleDateString('en-CA'),
         day: new Date().toLocaleDateString('en-US', { weekday: 'long' }),
         timing: filterTiming === 'All' ? 'Custom Filter' : filterTiming,
         sport: filterSport,
@@ -79,7 +142,8 @@ export default function Dashboard() {
         attendance: filteredPlayers.map(p => ({
           id: p.id,
           name: p.name,
-          status: p.status
+          status: p.status,
+          transportation: p.transportation || ''
         })),
         timestamp: serverTimestamp()
       });
@@ -97,7 +161,9 @@ export default function Dashboard() {
   const sports = useMemo(() => {
     const allSports = new Set();
     players.forEach(p => {
-      if (p.sport && p.sport !== 'N/A') {
+      if (p.sports && p.sports.length > 0) {
+        p.sports.forEach(s => allSports.add(s));
+      } else if (p.sport && p.sport !== 'N/A') {
         const parts = p.sport.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
         parts.forEach(s => allSports.add(s));
       }
@@ -123,9 +189,8 @@ export default function Dashboard() {
       let matchesSport = false;
       if (filterSport === 'All') {
         matchesSport = true;
-      } else if (p.sport) {
-        const playerSports = p.sport.split(/[,\n]/).map(s => s.trim().toLowerCase());
-        matchesSport = playerSports.includes(filterSport.toLowerCase());
+      } else if (p.sports && p.sports.length > 0) {
+        matchesSport = p.sports.map(s => s.toLowerCase()).includes(filterSport.toLowerCase());
       }
       
       const matchesTiming = filterTiming === 'All' || p.classTiming?.trim() === filterTiming;
@@ -133,6 +198,19 @@ export default function Dashboard() {
       return matchesSearch && matchesSport && matchesTiming;
     });
   }, [players, searchQuery, filterSport, filterTiming]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterSport, filterTiming]);
+
+  const totalPages = Math.ceil(filteredPlayers.length / itemsPerPage);
+  const paginatedPlayers = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredPlayers.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredPlayers, currentPage]);
 
   const stats = useMemo(() => {
     const total = players.length;
@@ -217,7 +295,8 @@ export default function Dashboard() {
       </div>
     </div>
 
-      <div className="controls-panel glass-panel animate-fade-in" style={{animationDelay: '0.5s'}}>
+    <div className="master-sticky-header">
+      <div className="controls-panel">
         <div className="search-box">
            <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
@@ -257,22 +336,127 @@ export default function Dashboard() {
           >
             {isSaving ? 'Saving...' : `💾 Save (${filteredPlayers.length})`}
           </button>
+          <button 
+            className="save-btn" 
+            onClick={syncExcelDB} 
+            disabled={isSaving}
+            style={{ backgroundColor: '#1A1A1A' }}
+          >
+            ⚠️ Sync XLSX to DB
+          </button>
           {saveMessage && <span className="save-msg">{saveMessage}</span>}
         </div>
       </div>
 
-      <div className="table-container animate-fade-in" style={{animationDelay: '0.6s'}}>
+      {/* MASTER STANDALONE TABLE HEADER */}
+      <div className="standalone-table-header desktop-only">
+        <table className="attendance-table" style={{ marginBottom: 0, borderSpacing: 0, width: '100%' }}>
+          <colgroup>
+            <col style={{ width: '25%' }} />
+            <col style={{ width: '16%' }} />
+            <col style={{ width: '15%' }} />
+            <col style={{ width: '15%' }} />
+            <col style={{ width: '12%' }} />
+            <col style={{ width: '17%' }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Player Name</th>
+              <th>Sport</th>
+              <th>Class Timing</th>
+              <th>Coach</th>
+              <th className="status-col">Attendance</th>
+              <th className="action-col">Transport</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+
+      <div className="table-container">
         {loading ? (
-          <div className="loading-state">
-            <p>Connection to Firebase...</p>
+          <div className="jumping-logo-container">
+            <img src="/fmac-logo-new.png" alt="Loading" className="jumping-logo" />
+            <span className="jumping-text">Syncing data...</span>
           </div>
         ) : (
-          <AttendanceTable 
-            players={filteredPlayers} 
-            onToggleStatus={handleToggleStatus} 
-          />
+          <>
+            <AttendanceTable 
+              players={paginatedPlayers} 
+              onToggleStatus={handleToggleStatus} 
+              onChangeTransport={handleChangeTransport}
+            />
+            {totalPages > 1 && (
+              <div className="pagination-controls">
+                <button 
+                  className="pagination-btn"
+                  disabled={currentPage === 1} 
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                >
+                  ← Previous
+                </button>
+                <div className="pagination-info">
+                  Page <span className="highlight-page">{currentPage}</span> of {totalPages}
+                </div>
+                <button 
+                  className="pagination-btn"
+                  disabled={currentPage === totalPages} 
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
+
+      {/* MISSING TRANSPORT MODAL */}
+      {missingTransportModal.isOpen && createPortal(
+        <div className="custom-modal-overlay animate-fade-in">
+          <div className="custom-modal glass-panel animate-pop-in">
+            <div className="modal-header">
+              <div className="modal-title-group">
+                <span className="modal-icon">⚠️</span>
+                <h3>Action Required</h3>
+              </div>
+              <button 
+                className="close-modal-btn" 
+                onClick={() => setMissingTransportModal({ isOpen: false, players: [] })}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <p className="modal-desc">
+                Cannot save attendance. The following <strong>{missingTransportModal.players.length}</strong> present player(s) have no transportation specified:
+              </p>
+              
+              <ul className="modal-player-list">
+                {missingTransportModal.players.map(p => (
+                  <li key={p.firestoreId} className="modal-player-item">
+                    <div className="modal-avatar">{p.name.charAt(0)}</div>
+                    <div className="modal-player-info">
+                      <span className="modal-player-name">{p.name}</span>
+                      <span className="modal-player-coach">Coach: {p.coach}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="modal-footer">
+              <button 
+                className="modal-primary-btn" 
+                onClick={() => setMissingTransportModal({ isOpen: false, players: [] })}
+              >
+                I'll fix it
+              </button>
+            </div>
+          </div>
+        </div>, document.body
+      )}
     </div>
   );
 }

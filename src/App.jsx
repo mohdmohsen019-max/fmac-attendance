@@ -3,6 +3,7 @@ import './App.css'
 import Dashboard from './components/Dashboard'
 import AttendanceHistory from './components/AttendanceHistory'
 import AnalyticsView from './components/AnalyticsView'
+import TransportationModule from './components/TransportationModule'
 import { auth } from './firebase'
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth'
 
@@ -73,6 +74,8 @@ function App() {
   const [user, setUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [displayedTab, setDisplayedTab] = useState('dashboard');
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -96,11 +99,25 @@ function App() {
     signOut(auth);
   };
 
+  const handleTabChange = (tabId) => {
+    if (tabId === activeTab || isTransitioning) return;
+    setActiveTab(tabId);
+    setIsTransitioning(true);
+    
+    // Simulate navigation/loading for 600ms to show the jumping logo
+    setTimeout(() => {
+      setDisplayedTab(tabId);
+      setIsTransitioning(false);
+    }, 600);
+  };
+
   if (initializing) {
     return (
       <div className="initializing-overlay">
-        <div className="loader"></div>
-        <p>Initializing Secure Session...</p>
+        <div className="jumping-logo-container">
+          <img src="/fmac-logo-new.png" alt="Loading" className="jumping-logo" />
+          <span className="jumping-text">Initializing Secure Session...</span>
+        </div>
       </div>
     );
   }
@@ -110,71 +127,96 @@ function App() {
   }
 
   const renderContent = () => {
-    switch (activeTab) {
+    switch (displayedTab) {
       case 'dashboard':
         return <Dashboard />;
       case 'history':
         return <AttendanceHistory />;
       case 'analytics':
         return <AnalyticsView />;
+      case 'transportation':
+        return <TransportationModule />;
       default:
         return <Dashboard />;
     }
   };
 
   return (
-    <div className="app-container">
-      <header className="main-header animate-fade-in">
-        <div className="logo">
+    <div className="app-container sidebar-layout">
+      {/* SIDEBAR NAVIGATION */}
+      <aside className="sidebar animate-fade-in">
+        <div className="sidebar-logo">
           <div className="logo-icon">
             <img src="/fmac-logo-new.png" alt="FMAC Logo" />
           </div>
         </div>
-        <div className="header-title">
-          <div className="title-group">
-            <h2>FMAC Attendance System</h2>
-            <span className="subtitle">Fujairah Martial Arts Club</span>
-          </div>
-        </div>
-        <div className="header-right">
-          <div className="date-display">
-            <span className="current-date">
-              {currentTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </span>
-            <span className="time-divider">|</span>
-            <span className="current-time">
-              {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
-            </span>
-          </div>
-          <button className="logout-btn" onClick={handleLogout}>
+
+        <nav className="sidebar-nav">
+          <button 
+            className={`sidebar-link ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => handleTabChange('dashboard')}
+          >
+            📋 Today's Attendance
+          </button>
+          <button 
+            className={`sidebar-link ${activeTab === 'history' ? 'active' : ''}`}
+            onClick={() => handleTabChange('history')}
+          >
+            📜 History Logs
+          </button>
+          <button 
+            className={`sidebar-link ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => handleTabChange('analytics')}
+          >
+            📊 Player Analytics
+          </button>
+          <button 
+            className={`sidebar-link ${activeTab === 'transportation' ? 'active' : ''}`}
+            onClick={() => handleTabChange('transportation')}
+          >
+            🚍 Transportation
+          </button>
+        </nav>
+        
+        <div className="sidebar-bottom">
+           <button className="logout-btn sidebar-logout" onClick={handleLogout}>
             Sign Out
           </button>
         </div>
-      </header>
+      </aside>
 
-      <main className="main-content">
-        <nav className="tabs-nav animate-fade-in">
-          <button 
-            className={`tab-link ${activeTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveTab('dashboard')}
-          >
-            Today's Attendance
-          </button>
-          <button 
-            className={`tab-link ${activeTab === 'history' ? 'active' : ''}`}
-            onClick={() => setActiveTab('history')}
-          >
-            History Logs
-          </button>
-          <button 
-            className={`tab-link ${activeTab === 'analytics' ? 'active' : ''}`}
-            onClick={() => setActiveTab('analytics')}
-          >
-            Player Analytics
-          </button>
-        </nav>
-        {renderContent()}
-      </main>
+      {/* MAIN CONTENT AREA */}
+      <div className="main-layout">
+        <header className="main-header animate-fade-in">
+          <div className="header-left">
+            <h2>{activeTab === 'dashboard' ? "Today's Attendance" : activeTab === 'history' ? "History Logs" : activeTab === 'analytics' ? "Player Analytics" : "Transportation Overview"}</h2>
+          </div>
+          <div className="header-right">
+            <div className="date-display">
+              <span className="current-date">
+                {currentTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </span>
+              <span className="time-divider">|</span>
+              <span className="current-time">
+                {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        <main className="main-content">
+          {isTransitioning ? (
+            <div className="jumping-logo-container animate-fade-in" style={{ height: '70vh' }}>
+              <img src="/fmac-logo-new.png" alt="Loading" className="jumping-logo" />
+              <span className="jumping-text">Loading...</span>
+            </div>
+          ) : (
+            <div key={displayedTab} className="view-transition-wrapper animate-fade-in">
+              {renderContent()}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   )
 }

@@ -1,15 +1,15 @@
 :root {
-  --primary-bg: #EFEFE9; /* UX Pilot warm grey/beige background */
+  --primary-bg: #F4F1ED; /* Very light greige tint for background */
   --secondary-bg: #FFFFFF; /* Pure white for input panels */
-  --glass-border: #D1D1CB; /* Crisp, slightly darker grey for structural lines */
-  --text-main: #0B0A1A; /* Deep indigo/black */
-  --text-muted: #5A5A66; /* Muted greyish-indigo */
+  --glass-border: #DED2C1; /* Soft Greige for structural lines */
+  --text-main: #200f07; /* Deep espresso */
+  --text-muted: #6B625E; /* Muted espresso/greige */
   
-  --accent-color: #a42c34; /* FMAC Cherry Red */
-  --accent-hover: #8b232a;
-  --accent-glow: transparent;
+  --accent-color: #C70017; /* FMAC Cherry Red */
+  --accent-hover: #9E0012;
+  --accent-glow: rgba(199, 0, 23, 0.15);
   
-  --button-bg: #110F24; /* Dark navy "Sign up" color */
+  --button-bg: #200f07; /* Dark navy/espresso */
   
   --status-present: #16A34A; 
   --status-present-bg: #F0FDF4;
@@ -17,8 +17,25 @@
   --status-absent-bg: #FEF2F2;
   
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --border-radius: 4px; /* Slight rounding, not extreme pills */
+  --border-radius: 12px; /* Smoother, premium radius */
+  
   --transition-speed: 0.2s;
+  
+  /* Premium Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 12px 32px -4px rgba(0, 0, 0, 0.04), 0 8px 16px -4px rgba(0, 0, 0, 0.03);
+  --shadow-float: 0 24px 48px -12px rgba(0, 0, 0, 0.08), 0 12px 24px -8px rgba(0, 0, 0, 0.04);
+  
+  /* High Performance Animation Physics */
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 200ms;
+  --dur-med: 400ms;
+
+  --color-primary: #C70017; /* CHERRY RED */
+  --color-secondary: #DED2C1; /* SOFT GREIGE */
+  --glow-primary: rgba(199, 0, 23, 0.4);
 }
 
 * {
@@ -32,9 +49,61 @@ body {
   background-color: var(--primary-bg);
   color: var(--text-main);
   min-height: 100vh;
-  margin: 0;
+}
+
+/* Custom Jumping FMAC Logo Loader */
+.jumping-logo-container {
   display: flex;
-  place-items: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+}
+
+.jumping-logo {
+  width: 80px;
+  height: auto;
+  animation: logoJump 0.8s cubic-bezier(0.28, 0.84, 0.42, 1) infinite;
+  filter: drop-shadow(0 12px 12px rgba(199, 0, 23, 0.15));
+}
+
+.jumping-text {
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  animation: pulseOpacity 1s ease-in-out infinite;
+}
+
+@keyframes logoJump {
+  0%, 100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  40% {
+    transform: translateY(-24px) scale(0.9, 1.1);
+  }
+  50% {
+    transform: translateY(-24px) scale(1, 1);
+  }
+  80% {
+    transform: translateY(0) scale(1.1, 0.9);
+  }
+}
+
+@keyframes pulseOpacity {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
 }
 
@@ -52,7 +121,8 @@ body {
   background: var(--secondary-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--border-radius);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--dur-med) var(--ease-spring), transform var(--dur-med) var(--ease-spring);
 }
 
 .bg-glow {
@@ -97,15 +167,47 @@ a:hover {
 button {
   cursor: pointer;
   font-family: inherit;
-  transition: all var(--transition-speed) ease;
+  transition: transform var(--dur-fast) var(--ease-spring), background var(--dur-fast), opacity var(--dur-fast), box-shadow var(--dur-fast);
+  will-change: transform;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+button:active {
+  transform: scale(0.97);
+}
+
+button:hover {
+  transform: scale(1.02);
+}
+
+/* Base Skeleton Loader */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.skeleton {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(to right, #F4F4F0 4%, #EFEFE9 25%, #F4F4F0 36%);
+  background-size: 1000px 100%;
+}
+
+/* Animations Core */
+@keyframes fadeInSlideUp {
+  0% { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: none; 
+  }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+  animation: fadeInSlideUp var(--dur-med) var(--ease-spring) forwards;
+  will-change: transform, opacity;
+}
+
+.view-transition-wrapper {
+  animation: fadeInSlideUp var(--dur-med) var(--ease-spring) forwards;
 }
