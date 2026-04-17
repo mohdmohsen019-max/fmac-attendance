@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import { collection, onSnapshot, query } from 'firebase/firestore';
+import { collection, onSnapshot, query, writeBatch, doc } from 'firebase/firestore';
 import { exportToExcel, exportToCSV } from '../utils/exportEngine';
 import ConfirmModal from './ConfirmModal';
 import { resetTransportationOnly } from '../utils/systemUtils';
@@ -17,6 +17,8 @@ export default function TransportationModule() {
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [filterOnlyNew, setFilterOnlyNew] = useState(true);
+  const [markingExported, setMarkingExported] = useState(false);
   
   const pdfRef = useRef(null);
 
@@ -106,11 +108,13 @@ export default function TransportationModule() {
       if (!log.attendance || !Array.isArray(log.attendance)) return;
 
       log.attendance.forEach(record => {
-        // 🚫 STRICT FILTER: Only present players with transport assigned
         const isPresent = record.status === 'present';
         const hasTransport = record.transportation && record.transportation !== 'None' && record.transportation !== 'Own Transportation';
         
         if (!isPresent) return; // Skip absent players entirely
+
+        // 🛡️ NEW: Filter out exported logs if toggled
+        if (filterOnlyNew && log.isExported) return;
 
         const master = players.find(p => p.id === record.id) || {};
         const timing = master.classTiming || log.timing || 'N/A';
@@ -124,7 +128,9 @@ export default function TransportationModule() {
           sport,
           timing,
           date: log.date,
-          transport
+          transport,
+          logId: log.id, // Track source log
+          isExported: !!log.isExported
         });
 
         // Skip metrics for "Own Transport" if filtering strictly for FMAC Usage
@@ -158,9 +164,10 @@ export default function TransportationModule() {
       dist: distMap,
       load: loadMap,
       trend: trendMap,
-      peak: peakLoad
+      peak: peakLoad,
+      includedLogIds: Array.from(new Set(filteredInstances.map(i => i.logId)))
     };
-  }, [logs, players, startDate, endDate, filterSport, filterTiming, filterTransport]);
+  }, [logs, players, startDate, endDate, filterSport, filterTiming, filterTransport, filterOnlyNew]);
 
   // Extract unique transport methods for filtering
   const transportMethods = useMemo(() => {
@@ -222,19 +229,44 @@ export default function TransportationModule() {
     }
   };
 
-  const handleExport = (type) => {
+  const handleExport = async (type) => {
     const exportFormat = transportData.instances.map(inst => ({
       "Player ID": inst.id,
       "Player Name": inst.name,
       "Sport": inst.sport,
       "Class Timing": inst.timing,
       "Date": inst.date,
-      "Transportation Method": inst.transport
+      "Transportation Method": inst.transport,
+      "Status": inst.isExported ? 'Previously Exported' : 'New'
     }));
 
-    if (type === 'excel') exportToExcel(exportFormat, `FMAC_Transport_Log_${startDate}_to_${endDate}`);
-    if (type === 'csv') exportToCSV(exportFormat, `FMAC_Transport_Log_${startDate}_to_${endDate}`);
+    const filename = `FMAC_Transport_Log_${startDate}_to_${endDate}`;
+    
+    if (type === 'excel') exportToExcel(exportFormat, filename);
+    if (type === 'csv') exportToCSV(exportFormat, filename);
     if (type === 'pdf') generateRichPDF();
+
+    // After excel/csv export, ask to mark as exported
+    if (type !== 'pdf' && transportData.includedLogIds.length > 0) {
+      setTimeout(async () => {
+        if (window.confirm(`Successfully exported ${transportData.instances.length} records. Mark these ${transportData.includedLogIds.length} sessions as "Exported" so they don't appear in future downloads?`)) {
+          setMarkingExported(true);
+          try {
+            const batch = writeBatch(db);
+            transportData.includedLogIds.forEach(logId => {
+              batch.update(doc(db, "attendance_logs", logId), { isExported: true });
+            });
+            await batch.commit();
+            console.log("Logs marked as exported.");
+          } catch (e) {
+            console.error("Error marking logs as exported:", e);
+            alert("Failed to mark logs as exported in database.");
+          } finally {
+            setMarkingExported(false);
+          }
+        }
+      }, 1000);
+    }
   };
 
   if (loading) {
@@ -407,6 +439,15 @@ export default function TransportationModule() {
             <label>To</label>
             <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           </div>
+          <div className="filter-checkbox-group">
+            <input 
+              type="checkbox" 
+              id="hideExported" 
+              checked={filterOnlyNew} 
+              onChange={(e) => setFilterOnlyNew(e.target.checked)} 
+            />
+            <label htmlFor="hideExported">Hide Exported</label>
+          </div>
         </div>
         
         <div className="tm-quick-filters">
@@ -555,6 +596,7 @@ export default function TransportationModule() {
                     <span className={`tm-transport-pill active`}>
                       {inst.transport}
                     </span>
+                    {inst.isExported && <span className="exported-check" title="Previously Exported">✓</span>}
                   </td>
                 </tr>
               ))

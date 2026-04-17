@@ -86,7 +86,7 @@ export default function AnalyticsView() {
   return (
     <div className="analytics-container glass-panel animate-fade-in">
       <div className="analytics-header">
-        <h2>Attendance Analytics</h2>
+        <h2>Logistics Hub Analytics</h2>
         <div className="analytics-filters">
           <select 
             value={selectedMonth} 
@@ -135,7 +135,7 @@ export default function AnalyticsView() {
             <tr>
               <th>Player</th>
               <th>Classes Attended</th>
-              <th>Attendance %</th>
+              <th>Completion %</th>
               <th>Performance</th>
             </tr>
           </thead>
@@ -165,7 +165,7 @@ export default function AnalyticsView() {
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="empty-row">No attendance records found for this month.</td>
+                <td colSpan="4" className="empty-row">No hub records found for this month.</td>
               </tr>
             )}
           </tbody>
@@ -178,7 +178,7 @@ export default function AnalyticsView() {
         onConfirm={handleReset}
         isDanger={true}
         title="Wipe Analytics History?"
-        message="This will delete the historical data used for these charts. Today's active attendance will NOT be affected."
+        message="This will delete the historical data used for these charts. Today's active Hub session will NOT be affected."
         confirmText="Yes, Wipe Data"
         requiredPasscode="Fm@c.2020"
       />

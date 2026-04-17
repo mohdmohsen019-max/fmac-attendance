@@ -20,10 +20,10 @@ export default function Dashboard() {
 
   const handleDailyReset = async () => {
     setIsSaving(true);
-    setSaveMessage('Resetting Attendance...');
+    setSaveMessage('Syncing Logistics Hub...');
     try {
       await resetDailyAttendanceStatus();
-      setSaveMessage('✅ Attendance Reset Successfully!');
+      setSaveMessage('✅ Logistics Hub Reset Successfully!');
       setTimeout(() => setSaveMessage(''), 5000);
     } catch (e) {
       console.error(e);
@@ -146,7 +146,7 @@ export default function Dashboard() {
     }
 
     setIsSaving(true);
-    setSaveMessage('Saving Snapshot...');
+    setSaveMessage('Syncing Ops Snapshot...');
 
     try {
       await addDoc(collection(db, "attendance_logs"), {
@@ -166,7 +166,7 @@ export default function Dashboard() {
         timestamp: serverTimestamp()
       });
       
-      setSaveMessage(`✅ Logged ${stats.present} present!`);
+      setSaveMessage(`✅ Sync Complete: ${stats.present} present!`);
       setTimeout(() => setSaveMessage(''), 4000);
     } catch (error) {
       console.error("Error saving log:", error);
@@ -273,7 +273,7 @@ export default function Dashboard() {
 
         <div className="stat-card glass-panel animate-fade-in" style={{animationDelay: '0.4s'}}>
           <div className="stat-header">
-            <h3>Attendance Rate</h3>
+            <h3>Logistics Completion</h3>
           </div>
           <div className="stat-value">{stats.rate}%</div>
           <p className="stat-label">Overall Completion</p>
@@ -357,7 +357,7 @@ export default function Dashboard() {
             onClick={handleSaveAttendance} 
             disabled={isSaving}
           >
-            {isSaving ? 'Saving...' : `Save Attendance (${filteredPlayers.length})`}
+            {isSaving ? 'Syncing...' : `Log Hub Session (${filteredPlayers.length})`}
           </button>
           <button 
             className="save-btn" 
@@ -462,7 +462,7 @@ export default function Dashboard() {
             
             <div className="modal-body">
               <p className="modal-desc">
-                Cannot save attendance. The following <strong>{missingTransportModal.players.length}</strong> present player(s) have no transportation specified:
+                Cannot sync hub data. The following <strong>{missingTransportModal.players.length}</strong> present player(s) have no transportation specified:
               </p>
               
               <ul className="modal-player-list">
@@ -496,7 +496,7 @@ export default function Dashboard() {
         onClose={() => setResetModalOpen(false)}
         onConfirm={handleDailyReset}
         isDanger={true}
-        title="Reset Today's Attendance?"
+        title="Reset Logistics Hub?"
         message="This will reset all player statuses to 'Absent' for today. Previous history logs will NOT be affected."
         confirmText="Yes, Reset Daily List"
         requiredPasscode="Fm@c.2020"

@@ -141,6 +141,40 @@
 .tm-date-range {
   display: flex;
   gap: 16px;
+  align-items: flex-end;
+}
+
+.filter-checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8f9fa;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 44px; /* Align with date inputs */
+}
+
+.filter-checkbox-group:hover {
+  background: white;
+  border-color: var(--accent-color);
+}
+
+.filter-checkbox-group input {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
+}
+
+.filter-checkbox-group label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  user-select: none;
 }
 
 .date-input-group {
@@ -420,6 +454,21 @@
 .tm-transport-pill.active {
   background: #FFE5E8;
   color: var(--accent-color);
+}
+
+.exported-check {
+  margin-left: 8px;
+  color: #10B981;
+  font-weight: 900;
+  display: inline-block;
+  background: #ECFDF5;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  vertical-align: middle;
 }
 
 /* --- MOBILE LOG CARDS --- */

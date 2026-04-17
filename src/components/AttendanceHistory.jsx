@@ -52,7 +52,7 @@ export default function AttendanceHistory() {
   }
 
   if (logs.length === 0) {
-    return <div className="empty-state">No attendance logs found. Save a snapshot in the Dashboard to see it here.</div>;
+    return <div className="empty-state">No logistics logs found. Save a snapshot in the Dashboard to see it here.</div>;
   }
 
   return (
@@ -87,6 +87,7 @@ export default function AttendanceHistory() {
               <div className="log-stats">
                 <span className="present">P: {log.presentCount}</span>
                 <span className="absent">A: {log.absentCount}</span>
+                {log.isExported && <span className="exported-indicator" title="Already Exported to Excel">✓</span>}
               </div>
             </div>
           ))}
@@ -156,7 +157,7 @@ export default function AttendanceHistory() {
         onConfirm={handleReset}
         isDanger={true}
         title="Clear All History?"
-        message="This will permanently delete all historical attendance logs. Current player arrival statuses will NOT be affected."
+        message="This will permanently delete all historical logistics logs. Current player arrival statuses will NOT be affected."
         confirmText="Yes, Clear All"
         requiredPasscode="Fm@c.2020"
       />

@@ -35,7 +35,7 @@ function LoginPage({ onLogin }) {
         <div className="login-logo">
           <img src="/fmac-logo-new.png" alt="FMAC Logo" />
         </div>
-        <h2 className="login-title">Attendance System</h2>
+        <h2 className="login-title">Logistics Hub Console</h2>
         <p className="login-subtitle">Admin Access Only</p>
         <form onSubmit={handleSubmit} className="login-form">
           <div className="login-field">
@@ -116,7 +116,7 @@ function App() {
       <div className="initializing-overlay">
         <div className="jumping-logo-container">
           <img src="/fmac-logo-new.png" alt="Loading" className="jumping-logo" />
-          <span className="jumping-text">Initializing Secure Session...</span>
+          <span className="jumping-text">Initializing Logistics...</span>
         </div>
       </div>
     );

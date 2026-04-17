@@ -128,6 +128,20 @@
 .log-stats .present { color: var(--status-present); }
 .log-stats .absent { color: var(--status-absent); }
 
+.exported-indicator {
+  margin-left: auto;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
 .history-detail {
   flex: 1;
   display: flex;
